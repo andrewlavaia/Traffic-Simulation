@@ -1,0 +1,27 @@
+intersections:
+- "5th Ave|10th St" 
+- "5th Ave|11th St" 
+- "5th Ave|12th St" 
+- "5th Ave|13th St" 
+- "5th Ave|14th St"
+- "Broadway|10th St"
+- "Broadway|11th St"
+- "Broadway|12th St"
+- "Broadway|13th St"
+- "Broadway|14th St"
+connections:
+- ["5th Ave|10th St", "Broadway|10th St"]
+- ["5th Ave|11th St", "Broadway|11th St"]
+- ["5th Ave|12th St", "Broadway|12th St"]
+- ["5th Ave|13th St", "Broadway|13th St"]
+- ["5th Ave|14th St", "Broadway|14th St"]
+- ["5th Ave|10th St", "5th Ave|11th St"]
+- ["5th Ave|11th St", "5th Ave|12th St"]
+- ["5th Ave|12th St", "5th Ave|13th St"]
+- ["5th Ave|13th St", "5th Ave|14th St"]
+- ["Broadway|10th St", "Broadway|11th St"]
+- ["Broadway|11th St", "Broadway|12th St"]
+- ["Broadway|12th St", "Broadway|13th St"]
+- ["Broadway|13th St", "Broadway|14th St"]
+
+
