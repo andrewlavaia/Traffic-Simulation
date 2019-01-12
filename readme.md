@@ -10,6 +10,10 @@ Developed in Python 3.6.5
 
 PyYAML -> pip install PyYAML
 
+## References
+
+Algorithms - Robert Sedgewick and Kevin Wayne (Fourth Edition, 2011).
+
 ## License
 
 MIT 
