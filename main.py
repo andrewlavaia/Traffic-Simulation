@@ -1,12 +1,14 @@
 import pdb
 import time
 
-from graphs import Graph
+from graphs import Graph, ShortestPaths
 
 
 def main():
     graph = Graph()
     graph.loadMap("map_default.yml")
+    vertex1 = graph.vertices["5th Ave|12th St"]
+    shortest_paths = ShortestPaths(graph, vertex1)
     pdb.set_trace()
 
 if __name__ == '__main__':
