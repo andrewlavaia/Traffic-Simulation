@@ -18,8 +18,9 @@ class Graph:
 
     def loadMap(self, filename):
         data = file_utils.load_map(filename)
-        for intersection_id in data["intersections"]:
-            self.vertices[intersection_id] = Vertex(intersection_id)
+        for vertex_data in data["intersections"]:
+            intersection_id, x, y = vertex_data
+            self.vertices[intersection_id] = Vertex(intersection_id, x, y)
             self.vertex_cnt += 1
 
         for connection in data["connections"]:
@@ -35,9 +36,9 @@ class Graph:
 
 
 class Edge:
-    def __init__(self, vertex_1, vertex_2, weight):
-        self.source = vertex_1
-        self.dest = vertex_2
+    def __init__(self, vertex_id_1, vertex_id_2, weight):
+        self.source = vertex_id_1
+        self.dest = vertex_id_2
         self.weight = weight
 
     def __repr__(self):
@@ -45,10 +46,11 @@ class Edge:
 
 
 class Vertex:
-    def __init__(self, name):
+    def __init__(self, name, x, y):
         self.id = name
         self.edges = []  # list of connected Edges
-        # x y coordinates so it can be drawn?
+        self.x = x
+        self.y = y
 
     def __eq__(self, that):
         return self.id == that.id
@@ -97,8 +99,3 @@ class ShortestPaths:
 
                 else:
                     heapq.heappush(self.pq, (self.path_lengths[dest_vertex.id], dest_vertex.id))
-
-
-class MapCreator:
-    """create a random map from a given number of vertices and edges"""
-    pass

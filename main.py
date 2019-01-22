@@ -1,10 +1,12 @@
 import pdb
 import time
+import sys
 
 from graphics import GraphWin
 from ui import Text, Point
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
+from maps import RoadMap
 
 
 def main():
@@ -13,8 +15,15 @@ def main():
 
     graph = Graph()
     graph.loadMap("map_default.yml")
-    vertex1 = graph.vertices["5th Ave|12th St"]
-    shortest_paths = ShortestPaths(graph, vertex1)
+    road_map = RoadMap(graph, window)
+    road_map.draw()
+    # vertex1 = graph.vertices["5th Ave|12th St"]
+    # shortest_paths = ShortestPaths(graph, vertex1)
+
+    # for vertex in graph.vertices.values():
+    #     vertex.shape.draw(window)
+    #     for edge in vertex.edges:
+    #         pass
 
     # initialize simulation variables
     simTime = 0.0
