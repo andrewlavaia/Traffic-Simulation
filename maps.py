@@ -16,15 +16,15 @@ class RoadMap:
                 p0 = Point(graph.vertices[edge.source].x, graph.vertices[edge.source].y)
                 p1 = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
 
-                # replace roads with sub-types
-                no_subtype_needed = True
-                for road in self.roads:
-                    if road.p0 == p1 and road.p1 == p0:
-                        no_subtype_needed = False
-                        self.roads.remove(road)
-                        self.roads.append(Road2W(p0, p1))
+                no_two_way_road_found = True
+                for edge in graph.vertices[edge.dest].edges:
+                    dest_point = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
+                    if dest_point == p0:
+                        no_two_way_road_found = False
+                        if Road2W(p1, dest_point) not in self.roads:
+                            self.roads.append(Road2W(p0, p1))
 
-                if no_subtype_needed:
+                if no_two_way_road_found:
                     self.roads.append(Road(p0, p1))
 
     def draw(self):
@@ -45,6 +45,9 @@ class Road:
         self.width = 5
 
         self.line = self.createLine(self.p0, self.p1, self.width)
+
+    def __eq__(self, other):
+        return self.p0 == other.p0 and self.p1 == other.p1
 
     @staticmethod
     def createLine(p0, p1, width):
