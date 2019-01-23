@@ -10,7 +10,7 @@ intersections:
 - ["Broadway|13th St", 500, 450]
 - ["Broadway|14th St", 500, 400]
 - ["Broadway|Random Cross St", 600, 300]
-- ["New St|5th Ave", 400, 300]
+- ["New St|5th Ave", 100, 300]
 
 connections:
 - ["5th Ave|10th St", "Broadway|10th St"]

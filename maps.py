@@ -67,22 +67,17 @@ class Road2W(Road):
         # get two parallel lines offset from original line,
         # going in opposite directions
         length = math_utils.pythag(self.dx, self.dy)
-        unit_x = abs(self.dx / length)
-        unit_y = abs(self.dy / length)
+        unit_x = self.dx / length
+        unit_y = self.dy / length
         gap = 5  # size of gap between lines
 
-        self.u0 = Point(self.p0.x - gap * unit_y, self.p0.y - gap * unit_x)
-        self.u1 = Point(self.p1.x - gap * unit_y, self.p1.y - gap * unit_x)
-        self.w0 = Point(self.p0.x + gap * unit_y, self.p0.y + gap * unit_x)
-        self.w1 = Point(self.p1.x + gap * unit_y, self.p1.y + gap * unit_x)
+        self.u0 = Point(self.p0.x - gap * unit_y, self.p0.y + gap * unit_x)
+        self.u1 = Point(self.p1.x - gap * unit_y, self.p1.y + gap * unit_x)
+        self.w0 = Point(self.p0.x + gap * unit_y, self.p0.y - gap * unit_x)
+        self.w1 = Point(self.p1.x + gap * unit_y, self.p1.y - gap * unit_x)
 
-        # enforce right lane driving
-        if self.dx <= 0:
-            self.line1 = self.createLine(self.u0, self.u1, self.width)
-            self.line2 = self.createLine(self.w1, self.w0, self.width)
-        else:
-            self.line1 = self.createLine(self.u1, self.u0, self.width)
-            self.line2 = self.createLine(self.w0, self.w1, self.width)
+        self.line1 = self.createLine(self.u0, self.u1, self.width)
+        self.line2 = self.createLine(self.w1, self.w0, self.width)
 
     def draw(self, canvas):
         self.line1.draw(canvas)
