@@ -8,7 +8,7 @@ class RoadMap:
     def __init__(self, graph, canvas):
         self.canvas = canvas
         self.intersections = []
-        self.roads = []
+        self.roads = set()
 
         for vertex in graph.vertices.values():
             self.intersections.append(Intersection(vertex))
@@ -22,10 +22,10 @@ class RoadMap:
                     if dest_point == p0:
                         no_two_way_road_found = False
                         if Road2W(p1, dest_point) not in self.roads:
-                            self.roads.append(Road2W(p0, p1))
+                            self.roads.add(Road2W(p0, p1))
 
                 if no_two_way_road_found:
-                    self.roads.append(Road(p0, p1))
+                    self.roads.add(Road(p0, p1))
 
     def draw(self):
         for intersection in self.intersections:
@@ -48,6 +48,11 @@ class Road:
 
     def __eq__(self, other):
         return self.p0 == other.p0 and self.p1 == other.p1
+
+    def __hash__(self):
+        p0_tuple = (self.p0.x, self.p0.y)
+        p1_tuple = (self.p1.x, self.p1.y)
+        return hash((p0_tuple, p1_tuple))
 
     @staticmethod
     def createLine(p0, p1, width):
@@ -81,6 +86,15 @@ class Road2W(Road):
 
         self.line1 = self.createLine(self.u0, self.u1, self.width)
         self.line2 = self.createLine(self.w1, self.w0, self.width)
+
+    def __eq__(self, other):
+        return ((self.p0 == other.p0 and self.p1 == other.p1) or
+                (self.p0 == other.p1 and other.p0 == self.p1))
+
+    def __hash__(self):
+        p0_tuple = (self.p0.x, self.p0.y)
+        p1_tuple = (self.p1.x, self.p1.y)
+        return hash(frozenset([p0_tuple, p1_tuple]))
 
     def draw(self, canvas):
         self.line1.draw(canvas)
