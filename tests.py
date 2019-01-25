@@ -36,5 +36,32 @@ class TestRotateAroundPoint(unittest.TestCase):
         self.assertAlmostEqual(expected[0], result[0], places=10)
         self.assertAlmostEqual(expected[1], result[1], places=10)
 
+    def test_90_degree_rotation_around_point(self):
+        point = (5, 3)
+        center_point = (3, 3)
+        degrees = 90
+        expected = (3, 5)
+        result = math_utils.rotate_point(point, degrees, center_point)
+        self.assertAlmostEqual(expected[0], result[0], places=10)
+        self.assertAlmostEqual(expected[1], result[1], places=10)
+
+    def test_45_degree_rotation_around_point(self):
+        point = (5, 3)
+        center_point = (3, 3)
+        degrees = 45
+        expected = (3 + math.sqrt(2), 3 + math.sqrt(2))
+        result = math_utils.rotate_point(point, degrees, center_point)
+        self.assertAlmostEqual(expected[0], result[0], places=10)
+        self.assertAlmostEqual(expected[1], result[1], places=10)
+
+    def test_0_degree_rotation_around_point(self):
+        point = (5, 3)
+        center_point = (3, 3)
+        degrees = 0
+        expected = (5, 3)
+        result = math_utils.rotate_point(point, degrees, center_point)
+        self.assertAlmostEqual(expected[0], result[0], places=10)
+        self.assertAlmostEqual(expected[1], result[1], places=10)
+
 if __name__ == '__main__':
     unittest.main()

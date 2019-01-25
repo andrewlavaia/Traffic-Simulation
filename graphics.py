@@ -695,6 +695,7 @@ class Polygon(GraphicsObject):
         return list(map(Point.clone, self.points))
 
     def _move(self, dx, dy):
+        self.center.move(dx, dy)
         for p in self.points:
             p.move(dx,dy)
    
@@ -709,13 +710,16 @@ class Polygon(GraphicsObject):
 
     def rotate(self, degrees):
         center_point = (self.center.x, self.center.y)
+        coords = []
         new_points = []
         for point in self.points:
             old_point = (point.x, point.y)
             new_point = math_utils.rotate_point(old_point, degrees, center_point)
+            coords.extend([new_point[0], new_point[1]])
             new_points.append(Point(new_point[0], new_point[1]))
-
+        self.canvas.coords(self.id, coords)
         self.points = new_points
+
 
 class Text(GraphicsObject):
     

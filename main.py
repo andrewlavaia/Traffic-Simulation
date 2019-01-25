@@ -49,6 +49,7 @@ def main():
         while lag > TIME_PER_TICK:
             # update simulation logic
             car.shape.rotate(1)
+            # car.shape.move(1, 1)
 
             nextLogicTick += TIME_PER_TICK
             lag -= TIME_PER_TICK

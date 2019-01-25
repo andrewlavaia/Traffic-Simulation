@@ -27,9 +27,7 @@ class Car:
         self.shape.draw(canvas)
 
     def render(self, canvas):
-        # !!! very inefficient
-        self.shape.undraw()
-        self.shape.draw(canvas)
+        pass
 
     def move(self, dx, dy):
         self.shape.move(dx, dy)
