@@ -99,6 +99,7 @@ __version__ = "5.0"
 #     Added Entry boxes.
 
 import time, os, sys
+import math_utils
 
 try:  # import as appropriate for 2.x vs. 3.x
    import tkinter as tk
@@ -674,7 +675,8 @@ class Line(_BBox):
 
 class Polygon(GraphicsObject):
     
-    def __init__(self, *points):
+    def __init__(self, center, *points):
+        self.center = center
         # if points passed as a list, extract it
         if len(points) == 1 and type(points[0]) == type([]):
             points = points[0]
@@ -704,6 +706,16 @@ class Polygon(GraphicsObject):
             args.append(y)
         args.append(options)
         return GraphWin.create_polygon(*args) 
+
+    def rotate(self, degrees):
+        center_point = (self.center.x, self.center.y)
+        new_points = []
+        for point in self.points:
+            old_point = (point.x, point.y)
+            new_point = math_utils.rotate_point(old_point, degrees, center_point)
+            new_points.append(Point(new_point[0], new_point[1]))
+
+        self.points = new_points
 
 class Text(GraphicsObject):
     

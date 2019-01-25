@@ -7,6 +7,7 @@ from ui import Text, Point
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
+from cars import Car
 
 
 def main():
@@ -17,13 +18,11 @@ def main():
     graph.loadMap("map_default.yml")
     road_map = RoadMap(graph, window)
     road_map.draw()
+
+    car = Car(300, 300)
+    car.draw(window)
     # vertex1 = graph.vertices["5th Ave|12th St"]
     # shortest_paths = ShortestPaths(graph, vertex1)
-
-    # for vertex in graph.vertices.values():
-    #     vertex.shape.draw(window)
-    #     for edge in vertex.edges:
-    #         pass
 
     # initialize simulation variables
     simTime = 0.0
@@ -49,11 +48,13 @@ def main():
 
         while lag > TIME_PER_TICK:
             # update simulation logic
+            car.shape.rotate(1)
 
             nextLogicTick += TIME_PER_TICK
             lag -= TIME_PER_TICK
 
         # render updates to window
+        car.render(window)
 
     window.close
 
