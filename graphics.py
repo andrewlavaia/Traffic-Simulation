@@ -555,8 +555,9 @@ class _BBox(GraphicsObject):
     # Internal base class for objects represented by bounding box
     # (opposite corners) Line segment is a degenerate case.
     
-    def __init__(self, p1, p2, options=["outline","width","fill"]):
+    def __init__(self, center, p1, p2, options=["outline","width","fill"]):
         GraphicsObject.__init__(self, options)
+        self.center = center
         self.p1 = p1.clone()
         self.p2 = p2.clone()
 
@@ -571,15 +572,25 @@ class _BBox(GraphicsObject):
     def getP2(self): return self.p2.clone()
     
     def getCenter(self):
-        p1 = self.p1
-        p2 = self.p2
-        return Point((p1.x+p2.x)/2.0, (p1.y+p2.y)/2.0)
+        return self.center
 
+    def rotate(self, degrees):
+        coords = []
+        center_point = (self.center.x, self.center.y)
+        old_p1 = (self.p1.x, self.p1.y)
+        old_p2 = (self.p2.x, self.p2.y)
+        new_p1 = math_utils.rotate_point(old_p1, degrees, center_point)
+        new_p2 = math_utils.rotate_point(old_p2, degrees, center_point)
+        coords = [new_p1[0], new_p1[1], new_p2[0], new_p2[1]]
+        self.canvas.coords(self.id, coords)
+        self.p1 = Point(new_p1[0], new_p1[1])
+        self.p2 = Point(new_p2[0], new_p2[1])
     
 class Rectangle(_BBox):
-    
+
     def __init__(self, p1, p2):
-        _BBox.__init__(self, p1, p2)
+        center = Point((p1.x + p2.x)/2, (p1.y + p2.y)/2)
+        _BBox.__init__(self, center, p1, p2)
 
     def __repr__(self):
         return "Rectangle({}, {})".format(str(self.p1), str(self.p2))
@@ -599,8 +610,8 @@ class Rectangle(_BBox):
 
 class Oval(_BBox):
     
-    def __init__(self, p1, p2):
-        _BBox.__init__(self, p1, p2)
+    def __init__(self, center, p1, p2):
+        _BBox.__init__(self, center, p1, p2)
 
     def __repr__(self):
         return "Oval({}, {})".format(str(self.p1), str(self.p2))
@@ -622,7 +633,7 @@ class Circle(Oval):
     def __init__(self, center, radius):
         p1 = Point(center.x-radius, center.y-radius)
         p2 = Point(center.x+radius, center.y+radius)
-        Oval.__init__(self, p1, p2)
+        Oval.__init__(self, center, p1, p2)
         self.center = center
         self.radius = radius
 
@@ -648,7 +659,8 @@ class Circle(Oval):
 class Line(_BBox):
     
     def __init__(self, p1, p2):
-        _BBox.__init__(self, p1, p2, ["arrow","fill","width"])
+        center = Point ((p1.x + p2.x)/2, (p1.y + p2.y)/2)
+        _BBox.__init__(self, center, p1, p2, ["arrow","fill","width"])
         self.setFill(DEFAULT_CONFIG['outline'])
         self.setOutline = self.setFill
 
