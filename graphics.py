@@ -582,7 +582,10 @@ class _BBox(GraphicsObject):
         new_p1 = math_utils.rotate_point(old_p1, degrees, center_point)
         new_p2 = math_utils.rotate_point(old_p2, degrees, center_point)
         coords = [new_p1[0], new_p1[1], new_p2[0], new_p2[1]]
-        self.canvas.coords(self.id, coords)
+        try:
+            self.canvas.coords(self.id, coords)
+        except tk.TclError:
+            sys.exit()
         self.p1 = Point(new_p1[0], new_p1[1])
         self.p2 = Point(new_p2[0], new_p2[1])
     
@@ -729,7 +732,11 @@ class Polygon(GraphicsObject):
             new_point = math_utils.rotate_point(old_point, degrees, center_point)
             coords.extend([new_point[0], new_point[1]])
             new_points.append(Point(new_point[0], new_point[1]))
-        self.canvas.coords(self.id, coords)
+        
+        try:
+            self.canvas.coords(self.id, coords)
+        except tk.TclError:
+            sys.exit()
         self.points = new_points
 
 

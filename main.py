@@ -2,7 +2,7 @@ import pdb
 import time
 import sys
 
-from graphics import GraphWin
+from graphics import GraphWin, GraphicsError
 from ui import Text, Point
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
@@ -19,9 +19,9 @@ def main():
     road_map = RoadMap(graph, window)
     road_map.draw()
 
-    car = Car(300, 300)
+    source_vertex = graph.vertices["5th Ave|12th St"]
+    car = Car(graph, source_vertex)
     car.draw(window)
-    # vertex1 = graph.vertices["5th Ave|12th St"]
     # shortest_paths = ShortestPaths(graph, vertex1)
 
     # initialize simulation variables
@@ -42,13 +42,16 @@ def main():
         simTime += elapsed
 
         # process events
-        if window.checkKey() == "space":
-            pause()
-            lastFrameTime = time.time()
+        try:
+            if window.checkKey() == "space":
+                pause()
+                lastFrameTime = time.time()
+        except GraphicsError:
+            pass
 
         while lag > TIME_PER_TICK:
             # update simulation logic
-            car.shape.rotate(1)
+            car.moveTowardsDest(TIME_PER_TICK)
             # car.shape.move(1, 1)
 
             nextLogicTick += TIME_PER_TICK
