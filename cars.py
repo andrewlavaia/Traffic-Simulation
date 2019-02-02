@@ -12,7 +12,7 @@ class Car:
         self.source = source
         self.x = source.x
         self.y = source.y
-        self.speed = 20
+        self.speed = 20.0
         self.width = 5
         self.height = 15
         self.direction = 0
@@ -53,12 +53,12 @@ class Car:
         movement = (dt * self.speed)
         dx = self.next_dest.x - self.x
         dy = self.next_dest.y - self.y
+        dist = math_utils.pythag(dx, dy)
 
-        if abs(dx) <= movement and abs(dy) <= movement:
+        if dist <= movement:
             self.next_dest = self.getNextDest()
             return
 
-        dist = math_utils.pythag(dx, dy)
         mv_x = (dx/dist) * movement
         mv_y = (dy/dist) * movement
 
@@ -73,19 +73,37 @@ class Car:
     def getShortestPathToDest(self):
         route = []
         dest = self.dest_id
+        route.append(dest)
         while (dest != self.source.id):
             edge = self.shortest_paths.path_of_edges[dest]
             dest = edge.source
             route.append(dest)
         return route
 
+    def newRoute(self):
+        self.source = self.graph.vertices[self.dest_id]
+        self.dest_id = self.chooseDest()
+        self.shortest_paths = ShortestPaths(self.graph, self.source)
+        self.route = self.getShortestPathToDest()
+        print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest_id))
+
     def getNextDest(self):
         if not self.route:
-            self.source = self.graph.vertices[self.dest_id]
-            self.dest_id = self.chooseDest()
-            self.shortest_paths = ShortestPaths(self.graph, self.source)
-            self.route = self.getShortestPathToDest()
-            print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest_id))
-
+            self.newRoute()
         dest_id = self.route.pop()
         return self.graph.vertices[dest_id]
+
+    def getInfo(self):
+        info = {
+            "id": self.id,
+            "source": self.source.id,
+            "dest": self.dest_id,
+            "speed": self.speed,
+            "route": self.route,
+        }
+        return info
+
+# TODO
+# Separate route into a separate class to isolate path and graph logic from car
+# replace dest_id with the full dest vertex
+# use roads and intersections rather than vertices and edges?

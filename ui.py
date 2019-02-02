@@ -115,7 +115,7 @@ class InputBox(UIBase):
 
 
 class Table(UIBase):
-    def __init__(self, canvas, point, row_height=30, col_width=70):
+    def __init__(self, canvas, point, row_height=30, col_width=120):
         self.canvas = canvas
         self.point = point
         self.rows = []
@@ -149,7 +149,7 @@ class Table(UIBase):
                 row.labels.append(Text(offset, row.values[j]))
             if i > 0:
                 offset.x = self.point.x + (len(row.values) * self.col_width) - 30
-                row.button = Button(self.canvas, offset, 15, 15, '-')
+                # row.button = Button(self.canvas, offset, 15, 15, '-')
             row.draw()
 
     def undraw(self):
@@ -179,11 +179,12 @@ class TableRow(UIBase):
 
 
 class HeaderText(UIBase):
-    def __init__(self, canvas, point, text):
+    def __init__(self, canvas, point, text, font_size=24):
         self.canvas = canvas
         self.text = Text(point, text)
-        self.text.setSize(24)
+        self.text.setSize(font_size)
         self.text.setStyle('bold')
+        self.text.setAlignment('left')
         self.draw()
 
     def draw(self):

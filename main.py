@@ -8,11 +8,16 @@ from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
 from cars import Car
+from info_window import InfoWindow
 
 
 def main():
     window.setBackground('white')
     window.clear()
+    secondary_window.setBackground('white')
+    secondary_window.clear()
+
+    info = InfoWindow(secondary_window)
 
     graph = Graph()
     graph.loadMap("map_default.yml")
@@ -52,13 +57,13 @@ def main():
         while lag > TIME_PER_TICK:
             # update simulation logic
             car.moveTowardsDest(TIME_PER_TICK)
-            # car.shape.move(1, 1)
 
             nextLogicTick += TIME_PER_TICK
             lag -= TIME_PER_TICK
 
         # render updates to window
         car.render(window)
+        info.updateTable(car.getInfo())
 
     window.close
 
@@ -84,6 +89,8 @@ if __name__ == '__main__':
     main_menu = MainMenu(window, main)
     menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
     window.addMenu(menu_options)
+
+    secondary_window = GraphWin('Info Window', 512, 256, autoflush=False)
 
     main()
 
