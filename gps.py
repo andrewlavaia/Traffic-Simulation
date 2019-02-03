@@ -6,18 +6,20 @@ class GPS:
     def __init__(self, graph):
         self.graph = graph
 
-    def getVertex(self, vertex_id):
-        return self.graph.vertices[vertex_id]
+    def getCoordinates(self, vertex_id):
+        vertex = self.graph.vertices[vertex_id]
+        return (vertex.x, vertex.y)
 
     def randomVertex(self):
         vertices = list(self.graph.vertices.keys())
         vertex_id = random.choice(vertices)
-        return self.graph.vertices[vertex_id]
+        return vertex_id
 
-    def shortestRoute(self, source, dest):
+    def shortestRoute(self, source_id, dest_id):
         route = []
+        source = self.graph.vertices[source_id]
         shortest_paths = ShortestPaths(self.graph, source)
-        dest = dest.id
+        dest = dest_id
         route.append(dest)
         while (dest != source.id):
             edge = shortest_paths.path_of_edges[dest]

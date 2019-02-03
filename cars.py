@@ -3,20 +3,19 @@ import math_utils
 
 
 class Car:
-    def __init__(self, gps, source):
+    def __init__(self, gps, source_id):
         self.id = id(self)
         self.gps = gps
-        self.source = source
-        self.dest = self.chooseDest()
-        self.x = source.x
-        self.y = source.y
+        self.source_id = source_id
+        self.dest_id = self.chooseDest()
+        self.x, self.y = self.gps.getCoordinates(source_id)
         self.speed = 20.0
         self.width = 5
         self.height = 15
         self.direction = 0
-        self.route = self.gps.shortestRoute(self.source, self.dest)
-        self.next_dest = self.getNextDest()
-        print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest.id))
+        self.route = self.gps.shortestRoute(self.source_id, self.dest_id)
+        self.next_dest_id = self.getNextDest()
+        print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
         # car shape must be a polygon because rectangles are represented as two points
         # which prevents proper rotations and translations
@@ -47,12 +46,13 @@ class Car:
 
     def moveTowardsDest(self, dt):
         movement = (dt * self.speed)
-        dx = self.next_dest.x - self.x
-        dy = self.next_dest.y - self.y
+        nx, ny = self.gps.getCoordinates(self.next_dest_id)
+        dx = nx - self.x
+        dy = ny - self.y
         dist = math_utils.pythag(dx, dy)
 
         if dist <= movement:
-            self.next_dest = self.getNextDest()
+            self.next_dest_id = self.getNextDest()
             return
 
         mv_x = (dx/dist) * movement
@@ -65,22 +65,22 @@ class Car:
         return self.gps.randomVertex()
 
     def newRoute(self):
-        self.source = self.gps.getVertex(self.dest.id)
-        self.dest = self.chooseDest()
-        self.route = self.gps.shortestRoute(self.source, self.dest)
-        print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest.id))
+        self.source_id = self.dest_id
+        self.dest_id = self.chooseDest()
+        self.route = self.gps.shortestRoute(self.source_id, self.dest_id)
+        print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
     def getNextDest(self):
         if not self.route:
             self.newRoute()
         dest_id = self.route.pop()
-        return self.gps.getVertex(dest_id)
+        return dest_id
 
     def getInfo(self):
         info = {
             "id": self.id,
-            "source": self.source.id,
-            "dest": self.dest.id,
+            "source": self.source_id,
+            "dest": self.dest_id,
             "speed": self.speed,
             "route": self.route,
         }

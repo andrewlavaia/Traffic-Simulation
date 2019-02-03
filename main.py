@@ -27,7 +27,7 @@ def main():
 
     source_vertex = graph.vertices["5th Ave|12th St"]
     gps = GPS(graph)
-    car = Car(gps, source_vertex)
+    car = Car(gps, "5th Ave|12th St")
     car.draw(window)
     # shortest_paths = ShortestPaths(graph, vertex1)
 
