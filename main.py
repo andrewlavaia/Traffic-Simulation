@@ -8,6 +8,7 @@ from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
 from cars import Car
+from gps import GPS
 from info_window import InfoWindow
 
 
@@ -25,7 +26,8 @@ def main():
     road_map.draw()
 
     source_vertex = graph.vertices["5th Ave|12th St"]
-    car = Car(graph, source_vertex)
+    gps = GPS(graph)
+    car = Car(gps, source_vertex)
     car.draw(window)
     # shortest_paths = ShortestPaths(graph, vertex1)
 

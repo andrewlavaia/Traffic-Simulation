@@ -1,26 +1,22 @@
-import random
-
-from graphics import Point, Polygon, Rectangle
+from graphics import Point, Polygon
 import math_utils
-from graphs import ShortestPaths
 
 
 class Car:
-    def __init__(self, graph, source):
+    def __init__(self, gps, source):
         self.id = id(self)
-        self.graph = graph
+        self.gps = gps
         self.source = source
+        self.dest = self.chooseDest()
         self.x = source.x
         self.y = source.y
         self.speed = 20.0
         self.width = 5
         self.height = 15
         self.direction = 0
-        self.shortest_paths = ShortestPaths(graph, source)
-        self.dest_id = self.chooseDest()
-        self.route = self.getShortestPathToDest()
+        self.route = self.gps.shortestRoute(self.source, self.dest)
         self.next_dest = self.getNextDest()
-        print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest_id))
+        print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest.id))
 
         # car shape must be a polygon because rectangles are represented as two points
         # which prevents proper rotations and translations
@@ -66,44 +62,26 @@ class Car:
         self.y += mv_y
 
     def chooseDest(self):
-        vertices = list(self.graph.vertices.keys())
-        vertices.remove(self.source.id)
-        return random.choice(vertices)
-
-    def getShortestPathToDest(self):
-        route = []
-        dest = self.dest_id
-        route.append(dest)
-        while (dest != self.source.id):
-            edge = self.shortest_paths.path_of_edges[dest]
-            dest = edge.source
-            route.append(dest)
-        return route
+        return self.gps.randomVertex()
 
     def newRoute(self):
-        self.source = self.graph.vertices[self.dest_id]
-        self.dest_id = self.chooseDest()
-        self.shortest_paths = ShortestPaths(self.graph, self.source)
-        self.route = self.getShortestPathToDest()
-        print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest_id))
+        self.source = self.gps.getVertex(self.dest.id)
+        self.dest = self.chooseDest()
+        self.route = self.gps.shortestRoute(self.source, self.dest)
+        print("Car {0} moving from {1} to {2}".format(self.id, self.source.id, self.dest.id))
 
     def getNextDest(self):
         if not self.route:
             self.newRoute()
         dest_id = self.route.pop()
-        return self.graph.vertices[dest_id]
+        return self.gps.getVertex(dest_id)
 
     def getInfo(self):
         info = {
             "id": self.id,
             "source": self.source.id,
-            "dest": self.dest_id,
+            "dest": self.dest.id,
             "speed": self.speed,
             "route": self.route,
         }
         return info
-
-# TODO
-# Separate route into a separate class to isolate path and graph logic from car
-# replace dest_id with the full dest vertex
-# use roads and intersections rather than vertices and edges?
