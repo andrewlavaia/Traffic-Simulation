@@ -26,3 +26,6 @@ class GPS:
             dest = edge.source
             route.append(dest)
         return route
+
+# TODO 
+# add method to detect if route exists or ensure all vertices can be reached during creation

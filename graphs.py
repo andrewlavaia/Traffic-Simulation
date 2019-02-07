@@ -1,6 +1,9 @@
-import file_utils
 import math
 import heapq
+import random
+
+import file_utils
+import math_utils
 
 
 class Graph:
@@ -20,11 +23,35 @@ class Graph:
         data = file_utils.load_map(filename)
         for vertex_data in data["intersections"]:
             intersection_id, x, y = vertex_data
-            self.vertices[intersection_id] = Vertex(intersection_id, x, y)
+            self.vertices[intersection_id] = Vertex(intersection_id, x, y, 1)
             self.vertex_cnt += 1
 
         for connection in data["connections"]:
             edge = Edge(connection[0], connection[1], 1)
+            self.addEdge(edge)
+
+    def randomMap(self, num_vertices, num_edges):
+        x_limit = 1024
+        y_limit = 768
+
+        for i in range(0, num_vertices):
+            x = random.randint(0, x_limit)
+            y = random.randint(0, y_limit)
+            intersection_id = str(x) + "," + str(y)
+            self.vertices[intersection_id] = Vertex(intersection_id, x, y)
+            self.vertex_cnt += 1
+
+        for j in range(0, num_edges):
+            vertices = list(self.vertices.keys())
+            intersection_id_1 = random.choice(vertices)
+            intersection_id_2 = random.choice(vertices)
+            if intersection_id_1 == intersection_id_2:
+                continue
+            dx = self.vertices[intersection_id_2].x - self.vertices[intersection_id_1].x
+            dy = self.vertices[intersection_id_2].y - self.vertices[intersection_id_1].y
+            distance = math_utils.pythag(dx, dy)
+            # !!! fix bug with distance for edge weight
+            edge = Edge(intersection_id_1, intersection_id_2, 1)
             self.addEdge(edge)
 
     def addEdge(self, edge):

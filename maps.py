@@ -112,8 +112,3 @@ class Intersection:
 
     def draw(self, canvas):
         self.shape.draw(canvas)
-
-
-class MapCreator:
-    """create a random map from a given number of vertices and edges"""
-    pass

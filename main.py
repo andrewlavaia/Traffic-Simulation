@@ -21,13 +21,13 @@ def main():
     info = InfoWindow(secondary_window)
 
     graph = Graph()
-    graph.loadMap("map_default.yml")
+    # graph.loadMap("map_default.yml")
+    graph.randomMap(25, 100)
     road_map = RoadMap(graph, window)
     road_map.draw()
 
-    source_vertex = graph.vertices["5th Ave|12th St"]
     gps = GPS(graph)
-    car = Car(gps, "5th Ave|12th St")
+    car = Car(gps, gps.randomVertex())
     car.draw(window)
     # shortest_paths = ShortestPaths(graph, vertex1)
 
