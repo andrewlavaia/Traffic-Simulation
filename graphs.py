@@ -23,7 +23,7 @@ class Graph:
         data = file_utils.load_map(filename)
         for vertex_data in data["intersections"]:
             intersection_id, x, y = vertex_data
-            self.vertices[intersection_id] = Vertex(intersection_id, x, y, 1)
+            self.vertices[intersection_id] = Vertex(intersection_id, x, y)
             self.vertex_cnt += 1
 
         for connection in data["connections"]:
@@ -41,6 +41,8 @@ class Graph:
             self.vertices[intersection_id] = Vertex(intersection_id, x, y)
             self.vertex_cnt += 1
 
+        # keep adding edges until all vertices are reachable?
+        # minimum spanning tree?
         for j in range(0, num_edges):
             vertices = list(self.vertices.keys())
             intersection_id_1 = random.choice(vertices)
@@ -50,8 +52,7 @@ class Graph:
             dx = self.vertices[intersection_id_2].x - self.vertices[intersection_id_1].x
             dy = self.vertices[intersection_id_2].y - self.vertices[intersection_id_1].y
             distance = math_utils.pythag(dx, dy)
-            # !!! fix bug with distance for edge weight
-            edge = Edge(intersection_id_1, intersection_id_2, 1)
+            edge = Edge(intersection_id_1, intersection_id_2, distance)
             self.addEdge(edge)
 
     def addEdge(self, edge):
@@ -120,7 +121,7 @@ class ShortestPaths:
                 self.path_of_edges[dest_vertex.id] = edge
 
                 if (dest_length, dest_vertex.id) in self.pq:
-                    index = self.pq.index((dest_length, dest_vertex))
+                    index = self.pq.index((dest_length, dest_vertex.id))
                     self.pq[index] = (self.path_lengths[dest_vertex.id], dest_vertex.id)
                     heapq.heapify(self.pq)
 

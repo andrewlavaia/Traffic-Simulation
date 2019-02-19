@@ -21,15 +21,21 @@ def main():
     info = InfoWindow(secondary_window)
 
     graph = Graph()
-    # graph.loadMap("map_default.yml")
-    graph.randomMap(25, 100)
+    graph.loadMap("map_default.yml")
+    # graph.randomMap(25, 50)
     road_map = RoadMap(graph, window)
     road_map.draw()
 
     gps = GPS(graph)
-    car = Car(gps, gps.randomVertex())
-    car.draw(window)
-    # shortest_paths = ShortestPaths(graph, vertex1)
+
+    num_cars = 4
+    cars = []
+    for i in range(0, num_cars):
+        car = Car(gps, gps.randomVertex())
+        car.draw(window)
+        cars.append(car)
+
+    selected_car = cars[0]
 
     # initialize simulation variables
     simTime = 0.0
@@ -56,16 +62,26 @@ def main():
         except GraphicsError:
             pass
 
+        last_clicked_pt = window.checkMouse()
+        if last_clicked_pt is not None:
+            for car in cars:
+                if car.clicked(last_clicked_pt):
+                    selected_car.shape.setFill("white")
+                    selected_car = car
+
+        # update simulation logic
         while lag > TIME_PER_TICK:
-            # update simulation logic
-            car.moveTowardsDest(TIME_PER_TICK)
+            for car in cars:
+                car.moveTowardsDest(TIME_PER_TICK)
 
             nextLogicTick += TIME_PER_TICK
             lag -= TIME_PER_TICK
 
         # render updates to window
-        car.render(window)
-        info.updateTable(car.getInfo())
+        for car in cars:
+            car.render(window)
+        info.updateTable(selected_car.getInfo())
+        selected_car.shape.setFill("yellow")
 
     window.close
 

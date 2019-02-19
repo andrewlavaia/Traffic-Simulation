@@ -26,6 +26,7 @@ class Car:
         p4 = Point(self.x - (self.width/2), self.y + (self.height/2))
         points = [p1, p2, p3, p4]
         self.shape = Polygon(center, points)
+        self.shape.setFill("white")
 
     def draw(self, canvas):
         self.shape.draw(canvas)
@@ -43,6 +44,16 @@ class Car:
         dy = self.y - self.shape.center.y
         self.rotate(dx, dy)
         self.shape.move(dx, dy)
+
+    def clicked(self, p):
+        x_points = [point.x for point in self.shape.points]
+        y_points = [point.y for point in self.shape.points]
+        xmin = min(x_points)
+        xmax = max(x_points)
+        ymin = min(y_points)
+        ymax = max(y_points)
+        return (xmin <= p.getX() <= xmax and
+                ymin <= p.getY() <= ymax)
 
     def moveTowardsDest(self, dt):
         movement = (dt * self.speed)
