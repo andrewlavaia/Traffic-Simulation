@@ -10,6 +10,7 @@ from maps import RoadMap
 from cars import Car
 from gps import GPS
 from info_window import InfoWindow
+from collision import processCollisions
 
 
 def main():
@@ -71,6 +72,7 @@ def main():
 
         # update simulation logic
         while lag > TIME_PER_TICK:
+            processCollisions(cars)
             for car in cars:
                 car.moveTowardsDest(TIME_PER_TICK)
 

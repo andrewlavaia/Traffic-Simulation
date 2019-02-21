@@ -10,6 +10,7 @@ class Car:
         self.dest_id = self.chooseDest()
         self.x, self.y = self.gps.getCoordinates(source_id)
         self.speed = 20.0
+        self.speed_limit = 30.0
         self.width = 5
         self.height = 15
         self.direction = 0
@@ -27,6 +28,9 @@ class Car:
         points = [p1, p2, p3, p4]
         self.shape = Polygon(center, points)
         self.shape.setFill("white")
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def draw(self, canvas):
         self.shape.draw(canvas)
@@ -54,6 +58,22 @@ class Car:
         ymax = max(y_points)
         return (xmin <= p.getX() <= xmax and
                 ymin <= p.getY() <= ymax)
+
+    def checkCollision(self, other):
+        """check whether this car is too close to another car"""
+        required_delta = 10
+        x_overlap = (abs(self.x - other.x) * 2) < (self.width + other.width) + required_delta
+        y_overlap = (abs(self.y - other.y) * 2) < (self.height + other.height) + required_delta
+        collision_detected = x_overlap and y_overlap
+        return collision_detected
+
+    def throttleDown(self):
+        self.speed *= 0.9
+
+    def throttleUp(self):
+        self.speed *= 1.1
+        if self.speed > self.speed_limit:
+            self.speed = self.speed_limit
 
     def moveTowardsDest(self, dt):
         movement = (dt * self.speed)
