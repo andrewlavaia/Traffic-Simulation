@@ -19,7 +19,7 @@ class LatLonConverter:
     def latLonToGlobalXY(self, lat, lon):
         """converts latitude and longitude to global planar coordinates"""
         # equirectangular projection
-        earth_radius = 3.963  # km
+        earth_radius = 6.371  # in km
         center_lat = (self.top_lat + self.bot_lat) / 2
         x = earth_radius * float(lon) * math.cos(math.radians(float(center_lat)))
         y = earth_radius * float(lat)

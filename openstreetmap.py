@@ -117,7 +117,7 @@ if __name__ == '__main__':
     api = overpy.Overpass()
     overpass_query = """
         [out:json];
-        way(40.73489,-73.99264,40.74020,-73.97923) ["highway"];
+        way(40.73489,-73.99264,40.74020,-73.97923) ["highway"]["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|motorway_link|trunk_link|primary_link|secondary_link|motorway_junction)$"];
         (._;>;);
         out;
         """
@@ -129,16 +129,24 @@ if __name__ == '__main__':
     result = api.parse_json(file_utils.load_bytes("map_data.txt"))
 
     # run query, parse results, and store result object in memory
-    result = api.query(overpass_query)
+    # result = api.query(overpass_query)
 
-    street_names = set()
-    for way in result.ways:
-        street_names.add(way.tags.get("name", "n/a"))
-        # print("Name: %s" % way.tags.get("name", "n/a"))
-        # print("  Highway: %s" % way.tags.get("highway", "n/a"))
-        # print("  Nodes:")
-        # for node in way.nodes:
-        #     print("    Lat: %f, Lon: %f" % (node.lat, node.lon))
+    # street_names = set()
+    # for way in result.ways:
+    #     # street_names.add(way.tags.get("name", "n/a"))
+    #     print("Name: %s" % way.tags.get("name", "n/a"))
+    #     print("  Highway: %s" % way.tags.get("highway", "n/a"))
+    #     print("  Nodes:")
+    #     for node in way.nodes:
+    #         print("    id: %d, Lat: %f, Lon: %f" % (node.id, node.lat, node.lon))
 
-    for street in sorted(street_names):
-        print(street)
+    # for node in result.nodes:
+    #     import pdb; pdb.set_trace()
+    #     print("Name: %s" % way.tags.get("name", "n/a"))
+    #     print("  Highway: %s" % way.tags.get("highway", "n/a"))
+    #     print("  Nodes:")
+    #     for node in way.nodes:
+    #         print("    id: %d, Lat: %f, Lon: %f" % (node.id, node.lat, node.lon))
+
+    # for street in sorted(street_names):
+    #     print(street)

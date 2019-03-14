@@ -107,7 +107,7 @@ class Intersection:
         self.id = vertex.id
         self.x = vertex.x
         self.y = vertex.y
-        self.radius = 15
+        self.radius = 3
         self.shape = Circle(Point(self.x, self.y), self.radius)
 
     def draw(self, canvas):
