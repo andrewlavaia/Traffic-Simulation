@@ -24,7 +24,7 @@ class GPS:
         while (dest != source.id):
             edge = shortest_paths.path_of_edges.get(dest)
             if edge is None:
-                return route
+                return None  # no route exists
             dest = edge.source
             route.append(dest)
         return route

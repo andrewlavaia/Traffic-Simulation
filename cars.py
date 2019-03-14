@@ -7,14 +7,14 @@ class Car:
         self.id = id(self)
         self.gps = gps
         self.source_id = source_id
-        self.dest_id = self.chooseDest()
+        self.dest_id = source_id
         self.x, self.y = self.gps.getCoordinates(source_id)
         self.speed = 20.0
         self.speed_limit = 30.0
         self.width = 5
         self.height = 15
         self.direction = 0
-        self.route = self.gps.shortestRoute(self.source_id, self.dest_id)
+        self.source_id, self.dest_id, self.route = self.newRoute()
         self.next_dest_id = self.getNextDest()
         print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
@@ -96,16 +96,36 @@ class Car:
         return self.gps.randomVertex()
 
     def newRoute(self):
-        self.source_id = self.dest_id
-        self.dest_id = self.chooseDest()
-        self.route = self.gps.shortestRoute(self.source_id, self.dest_id)
-        print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
+        new_source_id = self.dest_id
+        new_dest_id = self.chooseDest()
+        new_route = self.gps.shortestRoute(new_source_id, new_dest_id)
+        new_route_count = 1
+        while new_route is None and new_route_count < 10:
+            new_dest_id = self.chooseDest()
+            new_route = self.gps.shortestRoute(new_source_id, new_dest_id)
+            new_route_count += 1
+
+        if new_route is None:
+            # Car reached a dead end. Seriously, why do one way dead ends with no exit even exist?
+            # TODO -> systematically remove these from the map data when a car hits one?
+            print("Car {0} reached a dead end at {1}".format(self.id, new_source_id))
+            self.resetCurrentLocation()
+            return self.newRoute()
+
+        print("Car {0} moving from {1} to {2}".format(self.id, new_source_id, new_dest_id))
+        return new_source_id, new_dest_id, new_route
 
     def getNextDest(self):
         if not self.route:
-            self.newRoute()
+            self.source_id, self.dest_id, self.route = self.newRoute()
         dest_id = self.route.pop()
         return dest_id
+
+    def resetCurrentLocation(self):
+        """instantly transports car to a new random location"""
+        self.source_id = self.gps.randomVertex()
+        self.dest_id = self.source_id
+        self.x, self.y = self.gps.getCoordinates(self.source_id)
 
     def getInfo(self):
         info = {

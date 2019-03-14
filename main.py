@@ -34,7 +34,7 @@ def main():
 
     gps = GPS(graph)
 
-    num_cars = 1
+    num_cars = 20
     cars = []
     for i in range(0, num_cars):
         car = Car(gps, gps.randomVertex())
