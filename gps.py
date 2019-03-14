@@ -1,5 +1,5 @@
 import random
-from graphs import ShortestPaths
+from graphs import ShortestPaths, Edge
 
 
 class GPS:
@@ -22,10 +22,16 @@ class GPS:
         dest = dest_id
         route.append(dest)
         while (dest != source.id):
-            edge = shortest_paths.path_of_edges[dest]
+            edge = shortest_paths.path_of_edges.get(dest)
+            if edge is None:
+                return route
             dest = edge.source
             route.append(dest)
         return route
 
-# TODO 
+    def isEdgeTwoWay(self, edge):
+        opposite_edge = Edge(edge.dest, edge.source, edge.weight)
+        return opposite_edge in self.graph.vertices[edge.dest].edges
+
+# TODO
 # add method to detect if route exists or ensure all vertices can be reached during creation

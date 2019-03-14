@@ -1,6 +1,7 @@
 import math
 import heapq
 import random
+import overpy
 
 import file_utils
 import math_utils
@@ -29,6 +30,29 @@ class Graph:
         for connection in data["connections"]:
             edge = Edge(connection[0], connection[1], 1)
             self.addEdge(edge)
+
+    def loadOpenStreetMapData(self, filename, lat_lon_converter):
+        api = overpy.Overpass()
+        result = api.parse_json(file_utils.load_bytes(filename))
+        nodes = {}
+
+        for node in result.nodes:
+            if self.vertices.get(node.id) is None:
+                global_x, global_y = lat_lon_converter.latLonToGlobalXY(node.lat, node.lon)
+                local_x, local_y = lat_lon_converter.globalXYToLocalXY(global_x, global_y)
+                self.vertices[node.id] = Vertex(node.id, local_x, local_y)
+
+        for way in result.ways:
+            prev_node = None
+            for node in way.nodes:
+                if prev_node is not None:
+                    # create edge between current node and prev_node
+                    edge = Edge(prev_node.id, node.id, 1)
+                    self.addEdge(edge)
+                    if not way.tags.get('oneway') or way.tags.get('oneway') != 'yes':
+                        other_edge = Edge(node.id, prev_node.id, 1)
+                        self.addEdge(other_edge)
+                prev_node = node
 
     def randomMap(self, num_vertices, num_edges):
         x_limit = 1024
@@ -72,10 +96,17 @@ class Edge:
     def __repr__(self):
         return str(self.source) + "->" + str(self.dest) + " (" + str(self.weight) + ")"
 
+    def __eq__(self, other):
+        return (
+            self.source == other.source and
+            self.dest == other.dest and
+            self.weight == other.weight
+        )
+
 
 class Vertex:
-    def __init__(self, name, x, y):
-        self.id = name
+    def __init__(self, vertex_id, x, y):
+        self.id = vertex_id
         self.edges = []  # list of connected Edges
         self.x = x
         self.y = y

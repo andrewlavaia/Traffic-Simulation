@@ -11,6 +11,7 @@ from cars import Car
 from gps import GPS
 from info_window import InfoWindow
 from collision import processCollisions
+from latlon import LatLonConverter
 
 
 def main():
@@ -21,15 +22,19 @@ def main():
 
     info = InfoWindow(secondary_window)
 
+    llc = LatLonConverter(window, 40.73489, -73.99264, 40.74020, -73.97923)
+
     graph = Graph()
-    graph.loadMap("map_default.yml")
+    # graph.loadMap("map_default.yml")
+    graph.loadOpenStreetMapData("map_data.txt", llc)
+
     # graph.randomMap(25, 50)
     road_map = RoadMap(graph, window)
     road_map.draw()
 
     gps = GPS(graph)
 
-    num_cars = 4
+    num_cars = 1
     cars = []
     for i in range(0, num_cars):
         car = Car(gps, gps.randomVertex())
