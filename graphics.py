@@ -162,6 +162,7 @@ class GraphWin(tk.Canvas):
         self.mouseX = None
         self.mouseY = None
         self.bind("<Button-1>", self._onClick)
+        self.bind("<B1-Motion>", self.scroll_move)
         self.bind_all("<Key>", self._onKey)
         self.height = int(height)
         self.width = int(width)
@@ -171,6 +172,13 @@ class GraphWin(tk.Canvas):
         self.closed = False
         master.lift()
         self.lastKey = ""
+        
+        # scrolling options
+        self.configure(scrollregion=(-10000, -10000, 10000, 10000))
+        self.grid(row=0, column=0, sticky="nsew")
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
         if autoflush: _root.update()
 
     def __repr__(self):
@@ -358,8 +366,12 @@ class GraphWin(tk.Canvas):
     def _onClick(self, e):
         self.mouseX = e.x
         self.mouseY = e.y
+        self.scan_mark(e.x, e.y)
         if self._mouseCallback:
             self._mouseCallback(Point(e.x, e.y))
+
+    def scroll_move(self, e):
+        self.scan_dragto(e.x, e.y, gain=1)
 
     def addItem(self, item):
         self.items.append(item)
