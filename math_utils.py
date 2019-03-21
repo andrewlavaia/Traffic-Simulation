@@ -7,13 +7,13 @@ def pythag(side1, side2):
 
 
 def angle(dx, dy):
-    '''returns radians in cartesian coordinates'''
+    """returns radians in cartesian coordinates"""
     radians = math.atan2(dy, dx)
     return radians
 
 
 def degrees_clockwise(dx, dy):
-    '''returns rotation degrees assuming 0 is 12 o'clock'''
+    """returns rotation degrees assuming 0 is 12 o'clock"""
     radians = angle(dx, dy)  # between -pi and pi
     degrees = radians * 180/math.pi
     if degrees > 90:

@@ -12,6 +12,7 @@ from gps import GPS
 from info_window import InfoWindow
 from collision import processCollisions
 from latlon import LatLonConverter
+from openstreetmap import query_roads_by_lat_lon, save_raw_json_map_data
 
 
 def main():
@@ -20,9 +21,17 @@ def main():
     secondary_window.setBackground('white')
     secondary_window.clear()
 
+    zoom_factor = 1.0
+    window.setCoords(0, window.height/zoom_factor, window.width/zoom_factor, 0)
+
     info = InfoWindow(secondary_window)
 
-    llc = LatLonConverter(window, 40.73489, -73.99264, 40.74020, -73.97923)
+    # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
+    S, W, N, E = "40.73489", "-73.99264", "40.74020", "-73.97923"  # NYC lower east side
+    # overpass_query = query_roads_by_lat_lon(S, W, N, E)
+    # save_raw_json_map_data(overpass_query, "map_data.txt")
+
+    llc = LatLonConverter(window, S, W, N, E)
 
     graph = Graph()
     # graph.loadMap("map_default.yml")
@@ -34,7 +43,7 @@ def main():
 
     gps = GPS(graph)
 
-    num_cars = 20
+    num_cars = 5
     cars = []
     for i in range(0, num_cars):
         car = Car(gps, gps.randomVertex())
@@ -62,18 +71,27 @@ def main():
 
         # process events
         try:
-            if window.checkKey() == "space":
-                pause()
-                lastFrameTime = time.time()
+            last_pressed_key = window.checkKey() or secondary_window.checkKey()
+            if last_pressed_key is not None:
+                if last_pressed_key == "space":
+                    pause()
+                    lastFrameTime = time.time()
+                elif last_pressed_key == "p":
+                    zoom_factor *= 1.1
+                    window.setCoords(0, window.height/zoom_factor, window.width/zoom_factor, 0)
+                elif last_pressed_key == "o":
+                    zoom_factor *= 0.9
+                    window.setCoords(0, window.height/zoom_factor, window.width/zoom_factor, 0)
+
+            last_clicked_pt = window.checkMouse()
+            if last_clicked_pt is not None:
+                for car in cars:
+                    if car.clicked(last_clicked_pt):
+                        selected_car.shape.setFill("white")
+                        selected_car = car
+
         except GraphicsError:
             pass
-
-        last_clicked_pt = window.checkMouse()
-        if last_clicked_pt is not None:
-            for car in cars:
-                if car.clicked(last_clicked_pt):
-                    selected_car.shape.setFill("white")
-                    selected_car = car
 
         # update simulation logic
         while lag > TIME_PER_TICK:
@@ -98,7 +116,7 @@ def pause():
     message = Text(Point(window.width/2.0, window.height/2.0 - 50.0), 'Paused')
     message.setSize(24)
     message.draw(window)
-    while window.checkKey() != "space":
+    while window.checkKey() != "space" and secondary_window.checkKey() != "space":
         pass
     message.undraw()
 

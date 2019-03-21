@@ -5,10 +5,10 @@ class LatLonConverter:
     def __init__(self, canvas, bot_lat, left_lon, top_lat, right_lon):
         self.canvas_width = canvas.width
         self.canvas_height = canvas.height
-        self.top_lat = top_lat
-        self.left_lon = left_lon
-        self.bot_lat = bot_lat
-        self.right_lon = right_lon
+        self.top_lat = float(top_lat)
+        self.left_lon = float(left_lon)
+        self.bot_lat = float(bot_lat)
+        self.right_lon = float(right_lon)
 
         # get global reference points to scale local x y appropriately
         self.tlx, self.tly = self.latLonToGlobalXY(self.top_lat, self.left_lon)

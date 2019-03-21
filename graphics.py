@@ -171,7 +171,7 @@ class GraphWin(tk.Canvas):
         self.trans = None
         self.closed = False
         master.lift()
-        self.lastKey = ""
+        self.lastKey = None
         
         # scrolling options
         self.configure(scrollregion=(-10000, -10000, 10000, 10000))
@@ -335,7 +335,7 @@ class GraphWin(tk.Canvas):
             raise GraphicsError("checkKey in closed window")
         self.update()
         key = self.lastKey
-        self.lastKey = ""
+        self.lastKey = None
         return key
             
     def getHeight(self):
@@ -579,7 +579,7 @@ class _BBox(GraphicsObject):
         self.p1.x = self.p1.x + dx
         self.p1.y = self.p1.y + dy
         self.p2.x = self.p2.x + dx
-        self.p2.y = self.p2.y  + dy
+        self.p2.y = self.p2.y + dy
                 
     def getP1(self): return self.p1.clone()
 
@@ -729,13 +729,12 @@ class Polygon(GraphicsObject):
             p.move(dx,dy)
    
     def _draw(self, canvas, options):
-        args = [canvas]
+        points = []
         for p in self.points:
             x,y = canvas.toScreen(p.x,p.y)
-            args.append(x)
-            args.append(y)
-        args.append(options)
-        return GraphWin.create_polygon(*args) 
+            points.append(x)
+            points.append(y)
+        return canvas.create_polygon(*points, options) 
 
     def rotate(self, degrees):
         center_point = (self.center.x, self.center.y)

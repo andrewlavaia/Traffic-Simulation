@@ -9,14 +9,14 @@ import file_utils
 
 def save_json_map_data(query, filepath):
     """run overpass api http query and save response to file as json dict"""
-    response = fetch_raw_http_response(overpass_query)
+    response = fetch_raw_http_response(query)
     json_data = file_utils.bytes_to_json(response)
     file_utils.save_json(json_data, filepath)
 
 
 def save_raw_json_map_data(query, filepath):
     """run overpass api http query and save response to file as a raw byte stream of json data"""
-    response = fetch_raw_http_response(overpass_query)
+    response = fetch_raw_http_response(query)
     file_utils.save_bytes(response, filepath)
 
 
@@ -113,14 +113,19 @@ def fetch_raw_http_response(query):
     raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
 
 
-if __name__ == '__main__':
-    api = overpy.Overpass()
-    overpass_query = """
+def query_roads_by_lat_lon(S, W, N, E):
+    query_string = """
         [out:json];
-        way(40.73489,-73.99264,40.74020,-73.97923) ["highway"]["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|motorway_link|trunk_link|primary_link|secondary_link|motorway_junction)$"];
+        way({0}, {1}, {2}, {3}) ["highway"]["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|motorway_link|trunk_link|primary_link|secondary_link|motorway_junction)$"];
         (._;>;);
         out;
-        """
+        """.format(S, W, N, E)
+    return query_string
+
+if __name__ == '__main__':
+    api = overpy.Overpass()
+    # overpass_query = query_roads_by_lat_lon("40.73489", "-73.99264", "40.74020", "-73.97923")
+    overpass_query = query_roads_by_lat_lon("40.9946", "-73.8817", "41.0174", "-73.8281")
 
     # run query and save data locally
     save_raw_json_map_data(overpass_query, "map_data.txt")
