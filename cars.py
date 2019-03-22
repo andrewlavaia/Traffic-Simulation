@@ -44,9 +44,8 @@ class Car:
         self.direction = new_direction
 
     def render(self, canvas):
-        x, y = canvas.toScreen(self.x, self.y)
-        dx = x - self.shape.center.x
-        dy = y - self.shape.center.y
+        dx = self.x - self.shape.center.x
+        dy = self.y - self.shape.center.y
         self.rotate(dx, dy)
         self.shape.move(dx, dy)
 

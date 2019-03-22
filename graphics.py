@@ -595,13 +595,17 @@ class _BBox(GraphicsObject):
         old_p2 = (self.p2.x, self.p2.y)
         new_p1 = math_utils.rotate_point(old_p1, degrees, center_point)
         new_p2 = math_utils.rotate_point(old_p2, degrees, center_point)
-        coords = [new_p1[0], new_p1[1], new_p2[0], new_p2[1]]
+        self.p1 = Point(new_p1[0], new_p1[1])
+        self.p2 = Point(new_p2[0], new_p2[1])
+
+        # need to convert to screen coordinates when rendering to screen
+        screen_p1_x, screen_p1_y = self.canvas.toScreen(new_p1[0], new_p1[1])
+        screen_p2_x, screen_p2_y = self.canvas.toScreen(new_p2[0], new_p1[1])
+        coords = [screen_p1_x, screen_p1_y, screen_p1_x, screen_p1_y]
         try:
             self.canvas.coords(self.id, coords)
         except tk.TclError:
             sys.exit()
-        self.p1 = Point(new_p1[0], new_p1[1])
-        self.p2 = Point(new_p2[0], new_p2[1])
     
 class Rectangle(_BBox):
 
@@ -743,8 +747,11 @@ class Polygon(GraphicsObject):
         for point in self.points:
             old_point = (point.x, point.y)
             new_point = math_utils.rotate_point(old_point, degrees, center_point)
-            coords.extend([new_point[0], new_point[1]])
             new_points.append(Point(new_point[0], new_point[1]))
+
+            # need to convert to screen coordinates when rendering to screen
+            screen_x, screen_y = self.canvas.toScreen(new_point[0], new_point[1])
+            coords.extend([screen_x, screen_y])
         
         try:
             self.canvas.coords(self.id, coords)
