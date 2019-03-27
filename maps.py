@@ -39,7 +39,6 @@ class RoadMap:
                 road.drawText(self.canvas)
 
 
-
 class Road:
     """graphical representation of a single edge - one way road"""
     def __init__(self, p0, p1, name):
@@ -51,8 +50,7 @@ class Road:
         self.width = 5
 
         self.line = self.createLine(self.p0, self.p1, self.width)
-        midpoint = Point((self.p0.x + self.p1.x)/2.0, (self.p0.y + self.p1.y)/2.0)
-        self.text = Text(midpoint, self.name)
+        self.text = self.createText()
 
     def __eq__(self, other):
         return self.p0 == other.p0 and self.p1 == other.p1
@@ -70,6 +68,13 @@ class Road:
         line.setOutline(color)
         line.setArrow("last")
         return line
+
+    def createText(self):
+        midpoint = Point((self.p0.x + self.p1.x)/2.0, (self.p0.y + self.p1.y)/2.0)
+        text_obj = Text(midpoint, self.name)
+        text_obj.setSize(8)
+        text_obj.setRotation((math_utils.degrees_clockwise(self.dx, self.dy) % 180) - 90)
+        return text_obj
 
     def draw(self, canvas):
         self.line.draw(canvas)

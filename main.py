@@ -20,9 +20,6 @@ def main():
     secondary_window.setBackground('white')
     secondary_window.clear()
 
-    zoom_factor = 1.0
-    window.setCoords(0, window.height/zoom_factor, window.width/zoom_factor, 0)
-
     info = InfoWindow(secondary_window)
 
     # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
@@ -76,11 +73,9 @@ def main():
                     pause()
                     lastFrameTime = time.time()
                 elif last_pressed_key == "p":
-                    zoom_factor *= 1.1
-                    window.setCoords(0, window.height/zoom_factor, window.width/zoom_factor, 0)
+                    window.zoomIn()
                 elif last_pressed_key == "o":
-                    zoom_factor *= 0.9
-                    window.setCoords(0, window.height/zoom_factor, window.width/zoom_factor, 0)
+                    window.zoomOut()
 
             last_clicked_pt = window.checkMouse()
             if last_clicked_pt is not None:

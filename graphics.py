@@ -162,7 +162,7 @@ class GraphWin(tk.Canvas):
         self.mouseX = None
         self.mouseY = None
         self.bind("<Button-1>", self._onClick)
-        self.bind("<B1-Motion>", self.scroll_move)
+        self.bind("<B1-Motion>", self.scrollMove)
         self.bind_all("<Key>", self._onKey)
         self.height = int(height)
         self.width = int(width)
@@ -178,6 +178,9 @@ class GraphWin(tk.Canvas):
         self.grid(row=0, column=0, sticky="nsew")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
+
+        self.zoom_factor = 1.0
+        self.setCoords(0, self.height/self.zoom_factor, self.width/self.zoom_factor, 0)
 
         if autoflush: _root.update()
 
@@ -370,8 +373,16 @@ class GraphWin(tk.Canvas):
         if self._mouseCallback:
             self._mouseCallback(Point(e.x, e.y))
 
-    def scroll_move(self, e):
+    def scrollMove(self, e):
         self.scan_dragto(e.x, e.y, gain=1)
+
+    def zoomIn(self):
+        self.zoom_factor *= 1.1
+        self.setCoords(0, self.height/self.zoom_factor, self.width/self.zoom_factor, 0)
+
+    def zoomOut(self):
+        self.zoom_factor *= 0.9
+        self.setCoords(0, self.height/self.zoom_factor, self.width/self.zoom_factor, 0)
 
     def addItem(self, item):
         self.items.append(item)
@@ -768,6 +779,7 @@ class Text(GraphicsObject):
         self.anchor = p.clone()
         self.setFill(DEFAULT_CONFIG['outline'])
         self.setOutline = self.setFill
+        self.angle = 0
 
     def __repr__(self):
         return "Text({}, '{}')".format(self.anchor, self.getText())
@@ -775,7 +787,7 @@ class Text(GraphicsObject):
     def _draw(self, canvas, options):
         p = self.anchor
         x,y = canvas.toScreen(p.x,p.y)
-        return canvas.create_text(x,y,options)
+        return canvas.create_text(x, y, options, angle=self.angle)
         
     def _move(self, dx, dy):
         self.anchor.move(dx,dy)
@@ -785,7 +797,10 @@ class Text(GraphicsObject):
         other.config = self.config.copy()
         return other
 
-    def setText(self,text):
+    def setRotation(self, degrees):
+        self.angle = degrees
+
+    def setText(self, text):
         self._reconfig("text", text)
         
     def getText(self):
