@@ -1,5 +1,5 @@
 import graphs
-from graphics import Circle, Line, Point, color_rgb
+from graphics import Circle, Line, Point, color_rgb, Text
 import math_utils
 
 
@@ -21,30 +21,38 @@ class RoadMap:
                     dest_point = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
                     if dest_point == p0:
                         no_two_way_road_found = False
-                        if Road2W(p1, dest_point) not in self.roads:
-                            self.roads.add(Road2W(p0, p1))
+                        if Road2W(p1, dest_point, edge.name) not in self.roads:
+                            self.roads.add(Road2W(p0, p1, edge.name))
 
                 if no_two_way_road_found:
-                    self.roads.add(Road(p0, p1))
+                    self.roads.add(Road(p0, p1, edge.name))
 
     def draw(self):
         for intersection in self.intersections:
             intersection.draw(self.canvas)
 
+        street_names = set()
         for road in self.roads:
             road.draw(self.canvas)
+            if road.name not in street_names:
+                street_names.add(road.name)
+                road.drawText(self.canvas)
+
 
 
 class Road:
     """graphical representation of a single edge - one way road"""
-    def __init__(self, p0, p1):
+    def __init__(self, p0, p1, name):
         self.p0 = p0
         self.p1 = p1
+        self.name = name
         self.dx = self.p1.x - self.p0.x
         self.dy = self.p1.y - self.p0.y
         self.width = 5
 
         self.line = self.createLine(self.p0, self.p1, self.width)
+        midpoint = Point((self.p0.x + self.p1.x)/2.0, (self.p0.y + self.p1.y)/2.0)
+        self.text = Text(midpoint, self.name)
 
     def __eq__(self, other):
         return self.p0 == other.p0 and self.p1 == other.p1
@@ -66,11 +74,14 @@ class Road:
     def draw(self, canvas):
         self.line.draw(canvas)
 
+    def drawText(self, canvas):
+        self.text.draw(canvas)
+
 
 class Road2W(Road):
     """graphical representation of two opposite edges - two way road"""
-    def __init__(self, p0, p1):
-        super().__init__(p0, p1)
+    def __init__(self, p0, p1, name):
+        super().__init__(p0, p1, name)
 
         # get two parallel lines offset from original line,
         # going in opposite directions

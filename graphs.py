@@ -28,7 +28,7 @@ class Graph:
             self.vertex_cnt += 1
 
         for connection in data["connections"]:
-            edge = Edge(connection[0], connection[1], 1)
+            edge = Edge(connection[0], connection[1], 1, None)
             self.addEdge(edge)
 
     def loadOpenStreetMapData(self, filename, lat_lon_converter):
@@ -47,37 +47,12 @@ class Graph:
             for node in way.nodes:
                 if prev_node is not None:
                     # create edge between current node and prev_node
-                    edge = Edge(prev_node.id, node.id, 1)
+                    edge = Edge(prev_node.id, node.id, 1, way.tags.get('name'))
                     self.addEdge(edge)
                     if not way.tags.get('oneway') or way.tags.get('oneway') != 'yes':
-                        other_edge = Edge(node.id, prev_node.id, 1)
+                        other_edge = Edge(node.id, prev_node.id, 1, way.tags.get('name'))
                         self.addEdge(other_edge)
                 prev_node = node
-
-    def randomMap(self, num_vertices, num_edges):
-        x_limit = 1024
-        y_limit = 768
-
-        for i in range(0, num_vertices):
-            x = random.randint(0, x_limit)
-            y = random.randint(0, y_limit)
-            intersection_id = str(x) + "," + str(y)
-            self.vertices[intersection_id] = Vertex(intersection_id, x, y)
-            self.vertex_cnt += 1
-
-        # keep adding edges until all vertices are reachable?
-        # minimum spanning tree?
-        for j in range(0, num_edges):
-            vertices = list(self.vertices.keys())
-            intersection_id_1 = random.choice(vertices)
-            intersection_id_2 = random.choice(vertices)
-            if intersection_id_1 == intersection_id_2:
-                continue
-            dx = self.vertices[intersection_id_2].x - self.vertices[intersection_id_1].x
-            dy = self.vertices[intersection_id_2].y - self.vertices[intersection_id_1].y
-            distance = math_utils.pythag(dx, dy)
-            edge = Edge(intersection_id_1, intersection_id_2, distance)
-            self.addEdge(edge)
 
     def addEdge(self, edge):
         self.vertices[edge.source].addEdge(edge)
@@ -88,10 +63,11 @@ class Graph:
 
 
 class Edge:
-    def __init__(self, vertex_id_1, vertex_id_2, weight):
+    def __init__(self, vertex_id_1, vertex_id_2, weight, name):
         self.source = vertex_id_1
         self.dest = vertex_id_2
         self.weight = weight
+        self.name = name
 
     def __repr__(self):
         return str(self.source) + "->" + str(self.dest) + " (" + str(self.weight) + ")"

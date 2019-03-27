@@ -2,8 +2,7 @@ import pdb
 import time
 import sys
 
-from graphics import GraphWin, GraphicsError
-from ui import Text, Point
+from graphics import GraphWin, GraphicsError, Text, Point
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
@@ -113,7 +112,9 @@ def main():
 
 def pause():
     """pause until user hits space again"""
-    message = Text(Point(window.width/2.0, window.height/2.0 - 50.0), 'Paused')
+    center_x = window.canvasx(window.width/2.0)
+    center_y = window.canvasy(window.height/2.0) - 50
+    message = Text(Point(center_x, center_y), 'Paused')
     message.setSize(24)
     message.draw(window)
     while window.checkKey() != "space" and secondary_window.checkKey() != "space":
@@ -138,12 +139,14 @@ if __name__ == '__main__':
     main()
 
 # TODO
-# set up graph where each intersection represents a vertex
-# create road class that defines lanes, intersections, name, speed limit, and collision information
-# create car class that defines id (license plate #?), size, preferred speed, start and dest
+# Identify proper set of road tags that includes all main roads without too much noise
+# Add road names to map in an elegant manner
+# Add a follow car method so that a selected car stays in center of screen at all times
 # AI so cars can change lanes without crashing and adjust route based on existing traffic conditions
-# Algo to find shortest path/quickest expected path
-# use optparser to initially take command line args
+    # fix movement of cars on two way roads
+    # add roads that can support more than 1 lane in each direction
+    # add ability for cars to change lanes
 # create gui menu so that settings can be changed in the simulation (# of cars, lane closures, etc)
-# create a run simulation method
-# feature to import existing road systems from Google Maps API?
+# optimize until # of cars that can be drawn on the screen at once is: 50 | 100 | 200 | 500 | 1000
+    # create a way to limit # of collision checks that each car needs to do
+# dynamically load additional map data when zooming out or moving camera
