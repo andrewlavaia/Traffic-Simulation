@@ -378,11 +378,20 @@ class GraphWin(tk.Canvas):
 
     def zoomIn(self):
         self.zoom_factor *= 1.1
-        self.setCoords(0, self.height/self.zoom_factor, self.width/self.zoom_factor, 0)
+        self.zoom()
 
     def zoomOut(self):
         self.zoom_factor *= 0.9
-        self.setCoords(0, self.height/self.zoom_factor, self.width/self.zoom_factor, 0)
+        self.zoom()
+    
+    def zoom(self, zoom_factor=None):
+        if zoom_factor is None:
+            zoom_factor = self.zoom_factor
+        x_range = self.width/zoom_factor
+        y_range = self.height/zoom_factor
+        x_adj = (self.width - x_range)/2.0
+        y_adj = (self.height - y_range)/2.0
+        self.setCoords(x_adj, y_range + y_adj, x_range + x_adj, y_adj)
 
     def addItem(self, item):
         self.items.append(item)
