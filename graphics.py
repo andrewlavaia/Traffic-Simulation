@@ -250,6 +250,22 @@ class GraphWin(tk.Canvas):
         self.trans = Transform(self.width, self.height, x1, y1, x2, y2)
         self.redraw()
 
+    def getCoords(self):
+        """Get coordinates of current view, bottom left to top right"""
+        x_range = self.width/self.zoom_factor
+        y_range = self.height/self.zoom_factor
+        x_adj = (self.width - x_range)/2.0
+        y_adj = (self.height - y_range)/2.0
+        return x_adj, y_adj + y_range, x_adj + x_range, y_adj 
+
+    def getCenterCoords(self):
+        """Coordinates of the center of the current view"""
+        center_x = self.width/2.0
+        center_y = self.height/2.0
+        start_x = self.canvasx(0.0)/self.zoom_factor
+        start_y = self.canvasy(0.0)/self.zoom_factor
+        return start_x + center_x, start_y + center_y
+
     def close(self):
         """Close the window"""
 
@@ -258,20 +274,16 @@ class GraphWin(tk.Canvas):
         self.master.destroy()
         self.__autoflush()
 
-
     def isClosed(self):
         return self.closed
 
-
     def isOpen(self):
         return not self.closed
-
 
     def __autoflush(self):
         if self.autoflush:
             _root.update()
 
-    
     def plot(self, x, y, color="black"):
         """Set pixel (x,y) to the given color"""
         self.__checkOpen()
@@ -359,10 +371,16 @@ class GraphWin(tk.Canvas):
     def toWorld(self, x, y):
         trans = self.trans
         if trans:
-            return self.trans.world(x,y)
+            wx, wy = self.trans.world(x,y)
+            return wx + self.canvasx(0)/self.zoom_factor, wy + self.canvasy(0)/self.zoom_factor
         else:
             return x,y
-        
+
+    def toView(self, sx, sy):
+        """translates screen coordinates to view coordinates"""
+        x0, y1, x1, y0 = self.getCoords()
+        return int(x0 + sx/self.zoom_factor), int(y0 + sy/self.zoom_factor)
+
     def setMouseHandler(self, func):
         self._mouseCallback = func
         
@@ -377,11 +395,11 @@ class GraphWin(tk.Canvas):
         self.scan_dragto(e.x, e.y, gain=1)
 
     def zoomIn(self):
-        self.zoom_factor *= 1.1
+        self.zoom_factor += 0.1
         self.zoom()
 
     def zoomOut(self):
-        self.zoom_factor *= 0.9
+        self.zoom_factor -= 0.1
         self.zoom()
     
     def zoom(self, zoom_factor=None):

@@ -107,15 +107,8 @@ def main():
 
 def pause():
     """pause until user hits space again"""
-    x_range = window.width/window.zoom_factor
-    y_range = window.height/window.zoom_factor
-    x_adj = (window.width - x_range)/2.0
-    y_adj = (window.height - y_range)/2.0
-    center_x = x_adj + x_range/2.0
-    center_y = y_adj + y_range/2.0 - 40.0/window.zoom_factor
-    canvas_x = window.canvasx(0.0)/window.zoom_factor
-    canvas_y = window.canvasy(0.0)/window.zoom_factor
-    message = Text(Point(canvas_x + center_x, canvas_y + center_y), 'Paused')
+    cx, cy = window.getCenterCoords()
+    message = Text(Point(cx, cy), 'Paused')
     message.setSize(24)
     message.draw(window)
     while window.checkKey() != "space" and secondary_window.checkKey() != "space":
