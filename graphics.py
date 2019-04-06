@@ -174,7 +174,15 @@ class GraphWin(tk.Canvas):
         self.lastKey = None
         
         # scrolling options
-        self.configure(scrollregion=(-10000, -10000, 10000, 10000))
+        self.scrollregion = 20000
+        self.configure(
+            scrollregion=(
+                -self.scrollregion/2.0, 
+                -self.scrollregion/2.0, 
+                self.scrollregion/2.0, 
+                self.scrollregion/2.0
+            )
+        )
         self.grid(row=0, column=0, sticky="nsew")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -252,11 +260,17 @@ class GraphWin(tk.Canvas):
 
     def getCoords(self):
         """Get coordinates of current view, bottom left to top right"""
+        xview = self.xview()
+        yview = self.yview()
+        x0 = ((xview[0] * self.scrollregion) - (self.scrollregion/2.0))
+        x1 = ((xview[1] * self.scrollregion) - (self.scrollregion/2.0))
+        y0 = ((yview[0] * self.scrollregion) - (self.scrollregion/2.0))
+        y1 = ((yview[1] * self.scrollregion) - (self.scrollregion/2.0))
         x_range = self.width/self.zoom_factor
         y_range = self.height/self.zoom_factor
         x_adj = (self.width - x_range)/2.0
         y_adj = (self.height - y_range)/2.0
-        return x_adj, y_adj + y_range, x_adj + x_range, y_adj 
+        return x0 + x_adj, y1 - y_adj, x1 - x_adj, y0 + y_adj
 
     def getCenterCoords(self):
         """Coordinates of the center of the current view"""
@@ -387,12 +401,25 @@ class GraphWin(tk.Canvas):
     def _onClick(self, e):
         self.mouseX = e.x
         self.mouseY = e.y
-        self.scan_mark(e.x, e.y)
+        self.lastX = e.x
+        self.lastY = e.y
         if self._mouseCallback:
             self._mouseCallback(Point(e.x, e.y))
 
     def scrollMove(self, e):
-        self.scan_dragto(e.x, e.y, gain=1)
+        x_diff = (e.x - self.lastX)/self.zoom_factor
+        y_diff = (e.y - self.lastY)/self.zoom_factor
+        xview = self.xview()
+        yview = self.yview()
+        x0 = ((xview[0] * self.scrollregion) - (self.scrollregion/2.0))
+        x1 = ((xview[1] * self.scrollregion) - (self.scrollregion/2.0))
+        y0 = ((yview[0] * self.scrollregion) - (self.scrollregion/2.0))
+        y1 = ((yview[1] * self.scrollregion) - (self.scrollregion/2.0))
+        self.xview_moveto((x0 - x_diff + (self.scrollregion/2.0))/self.scrollregion)
+        self.yview_moveto((y0 - y_diff + (self.scrollregion/2.0))/self.scrollregion)
+        self.lastX = e.x
+        self.lastY = e.y
+        self.setCoords(*self.getCoords())
 
     def zoomIn(self):
         self.zoom_factor += 0.1
@@ -403,13 +430,11 @@ class GraphWin(tk.Canvas):
         self.zoom()
     
     def zoom(self, zoom_factor=None):
-        if zoom_factor is None:
-            zoom_factor = self.zoom_factor
-        x_range = self.width/zoom_factor
-        y_range = self.height/zoom_factor
-        x_adj = (self.width - x_range)/2.0
-        y_adj = (self.height - y_range)/2.0
-        self.setCoords(x_adj, y_range + y_adj, x_range + x_adj, y_adj)
+        self.setCoords(*self.getCoords())
+
+        # TODO: 
+        # add awesome perspective change options by modifying only the first and last coord
+        # ie self.setCoords(200, height, width, -200) will make more of an isometric view
 
     def addItem(self, item):
         self.items.append(item)
