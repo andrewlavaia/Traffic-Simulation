@@ -74,8 +74,12 @@ def main():
                     lastFrameTime = time.time()
                 elif last_pressed_key == "p":
                     window.zoomIn()
+                    road_map.drawRoadNames()
                 elif last_pressed_key == "o":
                     window.zoomOut()
+                    road_map.drawRoadNames()
+                elif last_pressed_key == "d":
+                    print(road_map.getRoadsWithinView())
 
             last_clicked_pt = window.checkMouse()
             if last_clicked_pt is not None:

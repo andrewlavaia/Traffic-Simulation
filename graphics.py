@@ -272,13 +272,21 @@ class GraphWin(tk.Canvas):
         y_adj = (self.height - y_range)/2.0
         return x0 + x_adj, y1 - y_adj, x1 - x_adj, y0 + y_adj
 
+    def getCanvasCoords(self):
+        """Coordinates of the canvas for the current view"""
+        x0, y1, x1, y0 = self.getCoords()
+        x0 += self.canvasx(0)/self.zoom_factor
+        x1 += self.canvasx(0)/self.zoom_factor
+        y0 += self.canvasy(0)/self.zoom_factor
+        y1 += self.canvasy(0)/self.zoom_factor
+        return x0, y1, x1, y0
+
     def getCenterCoords(self):
         """Coordinates of the center of the current view"""
-        center_x = self.width/2.0
-        center_y = self.height/2.0
-        start_x = self.canvasx(0.0)/self.zoom_factor
-        start_y = self.canvasy(0.0)/self.zoom_factor
-        return start_x + center_x, start_y + center_y
+        x0, y1, x1, y0 = self.getCanvasCoords()
+        cx = x0 + (x1 - x0)/2.0
+        cy = y0 + (y1 - y0)/2.0
+        return cx, cy
 
     def close(self):
         """Close the window"""
@@ -389,11 +397,6 @@ class GraphWin(tk.Canvas):
             return wx + self.canvasx(0)/self.zoom_factor, wy + self.canvasy(0)/self.zoom_factor
         else:
             return x,y
-
-    def toView(self, sx, sy):
-        """translates screen coordinates to view coordinates"""
-        x0, y1, x1, y0 = self.getCoords()
-        return int(x0 + sx/self.zoom_factor), int(y0 + sy/self.zoom_factor)
 
     def setMouseHandler(self, func):
         self._mouseCallback = func

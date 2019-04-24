@@ -28,21 +28,12 @@ class RoadMap:
                     self.roads.add(Road(p0, p1, edge.name))
 
     def getRoadsWithinView(self):
-        x0, y1, x1, y0 = self.canvas.getCoords()
-        x0 += self.canvas.canvasx(0)/self.canvas.zoom_factor
-        x1 += self.canvas.canvasx(0)/self.canvas.zoom_factor
-        y0 += self.canvas.canvasy(0)/self.canvas.zoom_factor
-        y1 += self.canvas.canvasy(0)/self.canvas.zoom_factor
-
+        x0, y1, x1, y0 = self.canvas.getCanvasCoords()
         roads_within_view = set()
         for road in self.roads:
-            p0x = road.p0.x
-            p0y = road.p0.y
-            p1x = road.p1.x
-            p1y = road.p1.y
             if ((x0 < road.p0.x < x1 and y0 < road.p0.y < y1) or
                     (x0 < road.p1.x < x1 and y0 < road.p1.y < y1)):
-                roads_within_view.add(road.name)
+                roads_within_view.add(road)
 
         return roads_within_view
 
@@ -50,13 +41,17 @@ class RoadMap:
         for intersection in self.intersections:
             intersection.draw(self.canvas)
 
-        road_names = {}
-        for road in sorted(self.roads, key=lambda x: x.p0.x):
+        for road in self.roads:
             road.draw(self.canvas)
+
+        self.drawRoadNames()  # drawn last so road names are on top
+
+    def drawRoadNames(self):
+        road_names = {}
+        roads_within_view = self.getRoadsWithinView()
+        for road in sorted(roads_within_view, key=lambda x: x.p0.x):
             road_names[road.name] = road
 
-        # draw street names separately so they are always on top
-        # TODO separate function that needs to get called periodically on map moves and zooms?
         for road in road_names.values():
             road.drawText(self.canvas)
 
@@ -102,6 +97,7 @@ class Road:
         self.line.draw(canvas)
 
     def drawText(self, canvas):
+        self.text.undraw()
         self.text.draw(canvas)
 
 
