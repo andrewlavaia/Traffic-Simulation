@@ -27,16 +27,38 @@ class RoadMap:
                 if no_two_way_road_found:
                     self.roads.add(Road(p0, p1, edge.name))
 
+    def getRoadsWithinView(self):
+        x0, y1, x1, y0 = self.canvas.getCoords()
+        x0 += self.canvas.canvasx(0)/self.canvas.zoom_factor
+        x1 += self.canvas.canvasx(0)/self.canvas.zoom_factor
+        y0 += self.canvas.canvasy(0)/self.canvas.zoom_factor
+        y1 += self.canvas.canvasy(0)/self.canvas.zoom_factor
+
+        roads_within_view = set()
+        for road in self.roads:
+            p0x = road.p0.x
+            p0y = road.p0.y
+            p1x = road.p1.x
+            p1y = road.p1.y
+            if ((x0 < road.p0.x < x1 and y0 < road.p0.y < y1) or
+                    (x0 < road.p1.x < x1 and y0 < road.p1.y < y1)):
+                roads_within_view.add(road.name)
+
+        return roads_within_view
+
     def draw(self):
         for intersection in self.intersections:
             intersection.draw(self.canvas)
 
-        street_names = set()
-        for road in self.roads:
+        road_names = {}
+        for road in sorted(self.roads, key=lambda x: x.p0.x):
             road.draw(self.canvas)
-            if road.name not in street_names:
-                street_names.add(road.name)
-                road.drawText(self.canvas)
+            road_names[road.name] = road
+
+        # draw street names separately so they are always on top
+        # TODO separate function that needs to get called periodically on map moves and zooms?
+        for road in road_names.values():
+            road.drawText(self.canvas)
 
 
 class Road:
