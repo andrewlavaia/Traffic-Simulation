@@ -3,13 +3,14 @@ from graphics import Point
 
 
 class InfoWindow:
-    def __init__(self, canvas, road_map):
+    def __init__(self, canvas):
         self.canvas = canvas
-        self.road_map = road_map
         self.table = Table(self.canvas, Point(50, 25))
         self.selected_car = None
+        self.show_route = False
+        self.follow_car = False
         self.show_route_btn = Button(
-            getattr(self, "showRoute"),
+            self.showRoute,
             self.canvas,
             Point(self.canvas.width/2, 300),
             300,
@@ -17,13 +18,14 @@ class InfoWindow:
             'Show Route'
         )
         self.follow_btn = Button(
-            getattr(self, "followCar"),
+            self.followCar,
             self.canvas,
             Point(self.canvas.width/2, 400),
             300,
             50,
             'Follow Selected Car'
         )
+        self.buttons = [self.show_route_btn, self.follow_btn]
 
     def setSelectedCar(self, car):
         if self.selected_car is not None:
@@ -32,10 +34,10 @@ class InfoWindow:
         self.selected_car.shape.setFill("yellow")
 
     def showRoute(self):
-        self.road_map.drawCarRoute(self.selected_car)
+        self.show_route = not self.show_route
 
     def followCar(self):
-        pass
+        self.follow_car = not self.follow_car
 
     def updateTable(self):
         try:

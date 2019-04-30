@@ -58,10 +58,12 @@ class RoadMap:
         for road in road_names.values():
             road.drawText(self.canvas)
 
-    def drawCarRoute(self, car):
-        for vertex_id in car.route:
-            intersection = self.intersections[vertex_id]
-            intersection.shape.setFill("blue")
+    def drawRoute(self, route, show_route):
+        for vertex_id, intersection in self.intersections.items():
+            if show_route and vertex_id in route:
+                intersection.shape.setFill("blue")
+            else:
+                intersection.shape.setFill("")
 
 
 class Road:

@@ -135,6 +135,5 @@ class Car:
             "source": self.source_id,
             "destination": self.dest_id,
             "speed": self.speed,
-            "route": self.route,
         }
         return info

@@ -44,7 +44,7 @@ def main():
         car.draw(window)
         cars.append(car)
 
-    info = InfoWindow(secondary_window, road_map)
+    info = InfoWindow(secondary_window)
     info.setSelectedCar(cars[0])
 
     # initialize simulation variables
@@ -88,8 +88,8 @@ def main():
 
             last_clicked_pt = secondary_window.checkMouse()
             if last_clicked_pt is not None:
-                info.show_route_btn.clicked(last_clicked_pt)
-                info.follow_btn.clicked(last_clicked_pt)
+                for button in info.buttons:
+                    button.clicked(last_clicked_pt)
 
         except GraphicsError:
             pass
@@ -107,6 +107,7 @@ def main():
         for car in cars:
             car.render(window)
         info.updateTable()
+        road_map.drawRoute(info.selected_car.route, info.show_route)
 
     window.close
 
