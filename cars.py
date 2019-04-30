@@ -130,10 +130,10 @@ class Car:
     def getInfo(self):
         info = {
             "id": self.id,
-            "x": self.x,
-            "y": self.y,
+            "x": "{0:.1f}".format(self.x),
+            "y": "{0:.1f}".format(self.y),
             "source": self.source_id,
-            "dest": self.dest_id,
+            "destination": self.dest_id,
             "speed": self.speed,
             "route": self.route,
         }

@@ -7,11 +7,11 @@ class RoadMap:
     """graphical representation of a graph"""
     def __init__(self, graph, canvas):
         self.canvas = canvas
-        self.intersections = []
+        self.intersections = {}
         self.roads = set()
 
         for vertex in graph.vertices.values():
-            self.intersections.append(Intersection(vertex))
+            self.intersections[vertex.id] = Intersection(vertex)
             for edge in vertex.getEdges():
                 p0 = Point(graph.vertices[edge.source].x, graph.vertices[edge.source].y)
                 p1 = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
@@ -38,7 +38,7 @@ class RoadMap:
         return roads_within_view
 
     def draw(self):
-        for intersection in self.intersections:
+        for intersection in self.intersections.values():
             intersection.draw(self.canvas)
 
         for road in self.roads:
@@ -49,11 +49,19 @@ class RoadMap:
     def drawRoadNames(self):
         road_names = {}
         roads_within_view = self.getRoadsWithinView()
-        for road in sorted(roads_within_view, key=lambda x: x.p0.x):
-            road_names[road.name] = road
+
+        for road in self.roads:
+            if road in roads_within_view:
+                road_names[road.name] = road
+            road.undrawText()
 
         for road in road_names.values():
             road.drawText(self.canvas)
+
+    def drawCarRoute(self, car):
+        for vertex_id in car.route:
+            intersection = self.intersections[vertex_id]
+            intersection.shape.setFill("blue")
 
 
 class Road:
@@ -99,6 +107,9 @@ class Road:
     def drawText(self, canvas):
         self.text.undraw()
         self.text.draw(canvas)
+
+    def undrawText(self):
+        self.text.undraw()
 
 
 class Road2W(Road):

@@ -20,8 +20,6 @@ def main():
     secondary_window.setBackground('white')
     secondary_window.clear()
 
-    info = InfoWindow(secondary_window)
-
     # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
     S, W, N, E = "40.73489", "-73.99264", "40.74020", "-73.97923"  # NYC lower east side
     # overpass_query = query_roads_by_lat_lon(S, W, N, E)
@@ -46,7 +44,8 @@ def main():
         car.draw(window)
         cars.append(car)
 
-    selected_car = cars[0]
+    info = InfoWindow(secondary_window, road_map)
+    info.setSelectedCar(cars[0])
 
     # initialize simulation variables
     simTime = 0.0
@@ -85,8 +84,12 @@ def main():
             if last_clicked_pt is not None:
                 for car in cars:
                     if car.clicked(last_clicked_pt):
-                        selected_car.shape.setFill("white")
-                        selected_car = car
+                        info.setSelectedCar(car)
+
+            last_clicked_pt = secondary_window.checkMouse()
+            if last_clicked_pt is not None:
+                info.show_route_btn.clicked(last_clicked_pt)
+                info.follow_btn.clicked(last_clicked_pt)
 
         except GraphicsError:
             pass
@@ -103,8 +106,7 @@ def main():
         # render updates to window
         for car in cars:
             car.render(window)
-        info.updateTable(selected_car.getInfo())
-        selected_car.shape.setFill("yellow")
+        info.updateTable()
 
     window.close
 
@@ -132,7 +134,7 @@ if __name__ == '__main__':
     menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
     window.addMenu(menu_options)
 
-    secondary_window = GraphWin('Info Window', 512, 256, autoflush=False)
+    secondary_window = GraphWin('Info Window', 512, 512, autoflush=False)
 
     main()
 
