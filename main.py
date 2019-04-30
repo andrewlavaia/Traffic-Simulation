@@ -91,6 +91,10 @@ def main():
                 for button in info.buttons:
                     button.clicked(last_clicked_pt)
 
+            if info.follow_car:
+                pxy = Point(info.selected_car.x, info.selected_car.y)
+                window.centerViewOnCanvasPoint(pxy)
+
         except GraphicsError:
             pass
 

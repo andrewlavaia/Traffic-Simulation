@@ -146,7 +146,9 @@ class Table(UIBase):
             offset.y = self.point.y + (i * self.row_height)
             for j in range(len(row.values)):
                 offset.x = self.point.x + (j * self.col_width)
-                row.labels.append(Text(offset, row.values[j]))
+                row_label = Text(offset, row.values[j])
+                row_label.setAlignment("right")
+                row.labels.append(row_label)
             if i > 0:
                 offset.x = self.point.x + (len(row.values) * self.col_width) - 30
                 # row.button = Button(self.canvas, offset, 15, 15, '-')

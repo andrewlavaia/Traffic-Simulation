@@ -5,7 +5,7 @@ from graphics import Point
 class InfoWindow:
     def __init__(self, canvas):
         self.canvas = canvas
-        self.table = Table(self.canvas, Point(50, 25))
+        self.table = Table(self.canvas, Point(100, 25), col_width=150)
         self.selected_car = None
         self.show_route = False
         self.follow_car = False

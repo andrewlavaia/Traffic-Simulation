@@ -288,6 +288,20 @@ class GraphWin(tk.Canvas):
         cy = y0 + (y1 - y0)/2.0
         return cx, cy
 
+    def centerViewOnCanvasPoint(self, point):
+        """sets the view to a specific point on the canvas"""
+        cx, cy = self.getCenterCoords()
+        x_adj = point.x - cx
+        y_adj = point.y - cy
+
+        x0, y1, x1, y0 = self.getCanvasCoords()
+        new_x0 = x0 + x_adj - self.canvasx(0)/self.zoom_factor
+        new_x1 = x1 + x_adj - self.canvasx(0)/self.zoom_factor
+        new_y0 = y0 + y_adj - self.canvasy(0)/self.zoom_factor
+        new_y1 = y1 + y_adj - self.canvasy(0)/self.zoom_factor
+
+        self.setCoords(new_x0, new_y1, new_x1, new_y0)
+
     def close(self):
         """Close the window"""
 
@@ -834,6 +848,7 @@ class Text(GraphicsObject):
         self.anchor = p.clone()
         self.setFill(DEFAULT_CONFIG['outline'])
         self.setOutline = self.setFill
+        self.align_anchor = "center"
         self.angle = 0
 
     def __repr__(self):
@@ -842,7 +857,7 @@ class Text(GraphicsObject):
     def _draw(self, canvas, options):
         p = self.anchor
         x,y = canvas.toScreen(p.x,p.y)
-        return canvas.create_text(x, y, options, angle=self.angle)
+        return canvas.create_text(x, y, options, angle=self.angle, anchor=self.align_anchor)
         
     def _move(self, dx, dy):
         self.anchor.move(dx,dy)
@@ -889,7 +904,15 @@ class Text(GraphicsObject):
         self.setFill(color)
 
     def setAlignment(self, alignment):
-        self._reconfig("justify", alignment)
+        if alignment in ["left", "right", "center"]:
+            if alignment == "left":
+                self.align_anchor = "w"
+            elif alignment == "right":
+                self.align_anchor = "e"
+            else:
+                self.align_anchor = "center"
+        else:
+            raise GraphicsError(BAD_OPTION)
 
 class Entry(GraphicsObject):
 
