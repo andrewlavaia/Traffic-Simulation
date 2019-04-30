@@ -91,10 +91,6 @@ def main():
                 for button in info.buttons:
                     button.clicked(last_clicked_pt)
 
-            if info.follow_car:
-                pxy = Point(info.selected_car.x, info.selected_car.y)
-                window.centerViewOnCanvasPoint(pxy)
-
         except GraphicsError:
             pass
 
@@ -112,6 +108,10 @@ def main():
             car.render(window)
         info.updateTable()
         road_map.drawRoute(info.selected_car.route, info.show_route)
+
+        if info.follow_car:
+            pxy = Point(info.selected_car.x, info.selected_car.y)
+            window.centerViewOnCanvasPoint(pxy)
 
     window.close
 
