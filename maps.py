@@ -69,6 +69,7 @@ class RoadMap:
 class Road:
     """graphical representation of a single edge - one way road"""
     def __init__(self, p0, p1, name):
+        self.id = id(self)
         self.p0 = p0
         self.p1 = p1
         self.name = name
@@ -80,7 +81,7 @@ class Road:
         self.text = self.createText()
 
     def __eq__(self, other):
-        return self.p0 == other.p0 and self.p1 == other.p1
+        return self.id == other.id
 
     def __hash__(self):
         p0_tuple = (self.p0.x, self.p0.y)

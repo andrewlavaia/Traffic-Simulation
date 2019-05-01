@@ -12,7 +12,7 @@ class InfoWindow:
         self.show_route_btn = Button(
             self.showRoute,
             self.canvas,
-            Point(self.canvas.width/2, 300),
+            Point(self.canvas.width/2, 375),
             300,
             50,
             'Show Route'
@@ -20,7 +20,7 @@ class InfoWindow:
         self.follow_btn = Button(
             self.followCar,
             self.canvas,
-            Point(self.canvas.width/2, 400),
+            Point(self.canvas.width/2, 450),
             300,
             50,
             'Follow Selected Car'

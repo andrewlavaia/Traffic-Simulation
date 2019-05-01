@@ -16,7 +16,8 @@ class Car:
         self.direction = 0
         self.source_id, self.dest_id, self.route = self.newRoute()
         self.next_dest_id = self.getNextDest()
-        print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
+        self.current_road = self.gps.getRoad(self.source_id, self.next_dest_id)
+        # print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
         # car shape must be a polygon because rectangles are represented as two points
         # which prevents proper rotations and translations
@@ -83,7 +84,9 @@ class Car:
         dist = math_utils.pythag(dx, dy)
 
         if dist <= movement:
+            new_source = self.next_dest_id
             self.next_dest_id = self.getNextDest()
+            self.current_road = self.gps.getRoad(new_source, self.next_dest_id)
             return
 
         mv_x = (dx/dist) * movement
@@ -135,5 +138,9 @@ class Car:
             "source": self.source_id,
             "destination": self.dest_id,
             "speed": self.speed,
+            " ": "",
+            "road name": self.current_road.name,
+            "speed limit": self.current_road.speed_limit,
+            "lanes": self.current_road.lanes,
         }
         return info

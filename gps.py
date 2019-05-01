@@ -10,6 +10,13 @@ class GPS:
         vertex = self.graph.vertices[vertex_id]
         return (vertex.x, vertex.y)
 
+    def getRoad(self, source_vertex_id, dest_vertex_id):
+        possible_roads = self.graph.vertices[source_vertex_id].getEdges()
+        for road in possible_roads:
+            if road.dest == dest_vertex_id:
+                return road
+        return None
+
     def randomVertex(self):
         vertices = list(self.graph.vertices.keys())
         vertex_id = random.choice(vertices)

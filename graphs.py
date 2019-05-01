@@ -47,10 +47,11 @@ class Graph:
             for node in way.nodes:
                 if prev_node is not None:
                     # create edge between current node and prev_node
-                    edge = Edge(prev_node.id, node.id, 1, way.tags.get('name'))
+                    distance = 1  # TODO calculate this...
+                    edge = Edge(prev_node.id, node.id, distance, way.tags)
                     self.addEdge(edge)
                     if not way.tags.get('oneway') or way.tags.get('oneway') != 'yes':
-                        other_edge = Edge(node.id, prev_node.id, 1, way.tags.get('name'))
+                        other_edge = Edge(node.id, prev_node.id, distance, way.tags)
                         self.addEdge(other_edge)
                 prev_node = node
 
@@ -63,11 +64,14 @@ class Graph:
 
 
 class Edge:
-    def __init__(self, vertex_id_1, vertex_id_2, weight, name):
+    def __init__(self, vertex_id_1, vertex_id_2, weight, tags):
         self.source = vertex_id_1
         self.dest = vertex_id_2
         self.weight = weight
-        self.name = name
+        self.name = tags.get("name", "")
+        self.speed_limit = tags.get("maxspeed", 25)
+        self.lanes = tags.get("lanes", 1)
+        self.is_one_way = True if tags.get("oneway") == "yes" else False
 
     def __repr__(self):
         return str(self.source) + "->" + str(self.dest) + " (" + str(self.weight) + ")"
@@ -78,6 +82,9 @@ class Edge:
             self.dest == other.dest and
             self.weight == other.weight
         )
+
+    def __hash__(self):
+        return hash((self.source, self.dest, self.weight, self.name))
 
 
 class Vertex:
