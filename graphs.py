@@ -69,8 +69,8 @@ class Edge:
         self.dest = vertex_id_2
         self.weight = weight
         self.name = tags.get("name", "")
-        self.speed_limit = tags.get("maxspeed", 25)
-        self.lanes = tags.get("lanes", 1)
+        self.speed_limit = "".join([c for c in str(tags.get("maxspeed", 25)) if c.isdigit()])
+        self.lanes = int(tags.get("lanes", 1))
         self.is_one_way = True if tags.get("oneway") == "yes" else False
 
     def __repr__(self):

@@ -21,11 +21,11 @@ class RoadMap:
                     dest_point = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
                     if dest_point == p0:
                         no_two_way_road_found = False
-                        if Road2W(p1, dest_point, edge.name) not in self.roads:
-                            self.roads.add(Road2W(p0, p1, edge.name))
+                        if Road2W(p1, dest_point, edge.name, edge.lanes) not in self.roads:
+                            self.roads.add(Road2W(p0, p1, edge.name, edge.lanes))
 
                 if no_two_way_road_found:
-                    self.roads.add(Road(p0, p1, edge.name))
+                    self.roads.add(Road(p0, p1, edge.name, edge.lanes))
 
     def getRoadsWithinView(self):
         x0, y1, x1, y0 = self.canvas.getCanvasCoords()
@@ -68,16 +68,25 @@ class RoadMap:
 
 class Road:
     """graphical representation of a single edge - one way road"""
-    def __init__(self, p0, p1, name):
+    def __init__(self, p0, p1, name, lanes):
         self.id = id(self)
         self.p0 = p0
         self.p1 = p1
         self.name = name
         self.dx = self.p1.x - self.p0.x
         self.dy = self.p1.y - self.p0.y
-        self.width = 5
+        self.width = 2
+        self.lanes = lanes
+        self.lines = []
 
-        self.line = self.createLine(self.p0, self.p1, self.width)
+        for i in range(lanes):
+            length = math_utils.pythag(self.dx, self.dy)
+            unit_x = self.dx / length
+            unit_y = self.dy / length
+            gap = 4  # size of gap between lines
+            u0 = Point(self.p0.x + i * (gap * unit_y), self.p0.y - i * (gap * unit_x))
+            u1 = Point(self.p1.x + i * (gap * unit_y), self.p1.y - i * (gap * unit_x))
+            self.lines.append(self.createLine(u0, u1, self.width))
         self.text = self.createText()
 
     def __eq__(self, other):
@@ -105,7 +114,8 @@ class Road:
         return text_obj
 
     def draw(self, canvas):
-        self.line.draw(canvas)
+        for line in self.lines:
+            line.draw(canvas)
 
     def drawText(self, canvas):
         self.text.undraw()
@@ -117,23 +127,27 @@ class Road:
 
 class Road2W(Road):
     """graphical representation of two opposite edges - two way road"""
-    def __init__(self, p0, p1, name):
-        super().__init__(p0, p1, name)
+    def __init__(self, p0, p1, name, lanes):
+        super().__init__(p0, p1, name, lanes)
+
+        self.lanes = lanes
 
         # get two parallel lines offset from original line,
         # going in opposite directions
         length = math_utils.pythag(self.dx, self.dy)
         unit_x = self.dx / length
         unit_y = self.dy / length
-        gap = 5  # size of gap between lines
+        way_gap = 5  # size of gap between each road direction
+        lane_gap = 5  # size of gap between lines
 
-        self.u0 = Point(self.p0.x - gap * unit_y, self.p0.y + gap * unit_x)
-        self.u1 = Point(self.p1.x - gap * unit_y, self.p1.y + gap * unit_x)
-        self.w0 = Point(self.p0.x + gap * unit_y, self.p0.y - gap * unit_x)
-        self.w1 = Point(self.p1.x + gap * unit_y, self.p1.y - gap * unit_x)
-
-        self.line1 = self.createLine(self.u0, self.u1, self.width)
-        self.line2 = self.createLine(self.w1, self.w0, self.width)
+        self.lines = []
+        for i in range(0, self.lanes, 2):
+            u0 = Point(self.p0.x - (way_gap * unit_y) - i * (lane_gap * unit_y), self.p0.y + (way_gap * unit_x) + i * (lane_gap * unit_x))
+            u1 = Point(self.p1.x - (way_gap * unit_y) - i * (lane_gap * unit_y), self.p1.y + (way_gap * unit_x) + i * (lane_gap * unit_x))
+            w0 = Point(self.p0.x + (way_gap * unit_y) + i * (lane_gap * unit_y), self.p0.y - (way_gap * unit_x) - i * (lane_gap * unit_x))
+            w1 = Point(self.p1.x + (way_gap * unit_y) + i * (lane_gap * unit_y), self.p1.y - (way_gap * unit_x) - i * (lane_gap * unit_x))
+            self.lines.append(self.createLine(u0, u1, self.width))
+            self.lines.append(self.createLine(w1, w0, self.width))
 
     def __eq__(self, other):
         return ((self.p0 == other.p0 and self.p1 == other.p1) or
@@ -145,8 +159,8 @@ class Road2W(Road):
         return hash(frozenset([p0_tuple, p1_tuple]))
 
     def draw(self, canvas):
-        self.line1.draw(canvas)
-        self.line2.draw(canvas)
+        for line in self.lines:
+            line.draw(canvas)
 
 
 class Intersection:
