@@ -14,6 +14,7 @@ class Car:
         self.width = 5
         self.height = 15
         self.direction = 0
+        self.lane_index = 0
         self.source_id, self.dest_id, self.route = self.newRoute()
         self.next_dest_id = self.getNextDest()
         self.current_road = self.gps.getRoad(self.source_id, self.next_dest_id)
@@ -87,6 +88,7 @@ class Car:
             new_source = self.next_dest_id
             self.next_dest_id = self.getNextDest()
             self.current_road = self.gps.getRoad(new_source, self.next_dest_id)
+            self.speed_limit = self.getSpeedLimit()
             return
 
         mv_x = (dx/dist) * movement
@@ -124,6 +126,12 @@ class Car:
         dest_id = self.route.pop()
         return dest_id
 
+    def getSpeedLimit(self):
+        if self.current_road and self.current_road.speed_limit is not None:
+            return float(self.current_road.speed_limit)
+        else:
+            return self.speed_limit
+
     def resetCurrentLocation(self):
         """instantly transports car to a new random location"""
         self.source_id = self.gps.randomVertex()
@@ -142,5 +150,6 @@ class Car:
             "road name": self.current_road.name,
             "speed limit": self.current_road.speed_limit,
             "lanes": self.current_road.lanes,
+            "one way": str(self.current_road.is_one_way),
         }
         return info

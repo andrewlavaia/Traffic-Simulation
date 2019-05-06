@@ -8,7 +8,7 @@ class RoadMap:
     def __init__(self, graph, canvas):
         self.canvas = canvas
         self.intersections = {}
-        self.roads = set()
+        self.roads = {}
 
         for vertex in graph.vertices.values():
             self.intersections[vertex.id] = Intersection(vertex)
@@ -16,21 +16,15 @@ class RoadMap:
                 p0 = Point(graph.vertices[edge.source].x, graph.vertices[edge.source].y)
                 p1 = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
 
-                no_two_way_road_found = True
-                for edge in graph.vertices[edge.dest].edges:
-                    dest_point = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
-                    if dest_point == p0:
-                        no_two_way_road_found = False
-                        if Road2W(p1, dest_point, edge.name, edge.lanes) not in self.roads:
-                            self.roads.add(Road2W(p0, p1, edge.name, edge.lanes))
-
-                if no_two_way_road_found:
-                    self.roads.add(Road(p0, p1, edge.name, edge.lanes))
+                if edge.is_one_way:
+                    self.roads[edge.id] = Road(edge.id, p0, p1, edge.name, edge.lanes)
+                else:
+                    self.roads[edge.id] = Road2W(edge.id, p0, p1, edge.name, edge.lanes)
 
     def getRoadsWithinView(self):
         x0, y1, x1, y0 = self.canvas.getCanvasCoords()
         roads_within_view = set()
-        for road in self.roads:
+        for road in self.roads.values():
             if ((x0 < road.p0.x < x1 and y0 < road.p0.y < y1) or
                     (x0 < road.p1.x < x1 and y0 < road.p1.y < y1)):
                 roads_within_view.add(road)
@@ -41,7 +35,7 @@ class RoadMap:
         for intersection in self.intersections.values():
             intersection.draw(self.canvas)
 
-        for road in self.roads:
+        for road in self.roads.values():
             road.draw(self.canvas)
 
         self.drawRoadNames()  # drawn last so road names are on top
@@ -50,7 +44,7 @@ class RoadMap:
         road_names = {}
         roads_within_view = self.getRoadsWithinView()
 
-        for road in self.roads:
+        for road in self.roads.values():
             if road in roads_within_view:
                 road_names[road.name] = road
             road.undrawText()
@@ -68,8 +62,8 @@ class RoadMap:
 
 class Road:
     """graphical representation of a single edge - one way road"""
-    def __init__(self, p0, p1, name, lanes):
-        self.id = id(self)
+    def __init__(self, edge_id, p0, p1, name, lanes):
+        self.id = edge_id
         self.p0 = p0
         self.p1 = p1
         self.name = name
@@ -143,8 +137,8 @@ class Road:
 
 class Road2W(Road):
     """graphical representation of two opposite edges - two way road"""
-    def __init__(self, p0, p1, name, lanes):
-        super().__init__(p0, p1, name, lanes)
+    def __init__(self, edge_id, p0, p1, name, lanes):
+        super().__init__(edge_id, p0, p1, name, lanes)
         self.lanes = lanes
         self.lines = []
         self.way_gap = 5

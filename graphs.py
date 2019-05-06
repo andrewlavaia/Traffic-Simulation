@@ -47,10 +47,17 @@ class Graph:
             for node in way.nodes:
                 if prev_node is not None:
                     # create edge between current node and prev_node
-                    distance = 1  # TODO calculate this...
+
+                    # TODO
+                    # calculate distance between each node
+                    # collapse edges on the same straight line when no other connections
+                    # (in addition to reducing number of calculations and shapes drawn on screen
+                    #  this should also be able to fix anamolous lane issues between similar edges)
+
+                    distance = 1
                     edge = Edge(prev_node.id, node.id, distance, way.tags)
                     self.addEdge(edge)
-                    if not way.tags.get('oneway') or way.tags.get('oneway') != 'yes':
+                    if way.tags.get('oneway') != 'yes':
                         other_edge = Edge(node.id, prev_node.id, distance, way.tags)
                         self.addEdge(other_edge)
                 prev_node = node
@@ -65,6 +72,7 @@ class Graph:
 
 class Edge:
     def __init__(self, vertex_id_1, vertex_id_2, weight, tags):
+        self.id = id(self)
         self.source = vertex_id_1
         self.dest = vertex_id_2
         self.weight = weight
@@ -77,14 +85,10 @@ class Edge:
         return str(self.source) + "->" + str(self.dest) + " (" + str(self.weight) + ")"
 
     def __eq__(self, other):
-        return (
-            self.source == other.source and
-            self.dest == other.dest and
-            self.weight == other.weight
-        )
+        return self.id == other.id
 
     def __hash__(self):
-        return hash((self.source, self.dest, self.weight, self.name))
+        return hash((self.id, self.source, self.dest, self.weight, self.name))
 
 
 class Vertex:

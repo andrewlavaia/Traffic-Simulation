@@ -73,10 +73,8 @@ def main():
                     lastFrameTime = time.time()
                 elif last_pressed_key == "p":
                     window.zoomIn()
-                    road_map.drawRoadNames()
                 elif last_pressed_key == "o":
                     window.zoomOut()
-                    road_map.drawRoadNames()
                 elif last_pressed_key == "d":
                     print(road_map.getRoadsWithinView())
 
@@ -104,10 +102,11 @@ def main():
             lag -= TIME_PER_TICK
 
         # render updates to window
+        road_map.drawRoadNames()
+        road_map.drawRoute(info.selected_car.route, info.show_route)
         for car in cars:
             car.render(window)
         info.updateTable()
-        road_map.drawRoute(info.selected_car.route, info.show_route)
 
         if info.follow_car:
             pxy = Point(info.selected_car.x, info.selected_car.y)

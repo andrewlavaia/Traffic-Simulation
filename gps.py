@@ -5,16 +5,20 @@ from graphs import ShortestPaths, Edge
 class GPS:
     def __init__(self, graph):
         self.graph = graph
+        # self.road_map = ? -> can I avoid this dependency
+        # separate class that handles lane_adjustments?
+        # how to handle different adjustments for different types of roads?
 
     def getCoordinates(self, vertex_id):
         vertex = self.graph.vertices[vertex_id]
+        # TODO return lane_adjusted point based on car's lane_index
         return (vertex.x, vertex.y)
 
     def getRoad(self, source_vertex_id, dest_vertex_id):
-        possible_roads = self.graph.vertices[source_vertex_id].getEdges()
-        for road in possible_roads:
-            if road.dest == dest_vertex_id:
-                return road
+        possible_edges = self.graph.vertices[source_vertex_id].getEdges()
+        for edge in possible_edges:
+            if edge.dest == dest_vertex_id:
+                return edge
         return None
 
     def randomVertex(self):
@@ -35,10 +39,6 @@ class GPS:
             dest = edge.source
             route.append(dest)
         return route
-
-    def isEdgeTwoWay(self, edge):
-        opposite_edge = Edge(edge.dest, edge.source, edge.weight)
-        return opposite_edge in self.graph.vertices[edge.dest].edges
 
 # TODO
 # add method to detect if route exists or ensure all vertices can be reached during creation
