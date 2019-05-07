@@ -17,7 +17,7 @@ class Car:
         self.lane_index = 0
         self.source_id, self.dest_id, self.route = self.newRoute()
         self.next_dest_id = self.getNextDest()
-        self.current_road = self.gps.getRoad(self.source_id, self.next_dest_id)
+        self.current_edge = self.gps.getEdge(self.source_id, self.next_dest_id)
         # print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
         # car shape must be a polygon because rectangles are represented as two points
@@ -79,7 +79,7 @@ class Car:
 
     def moveTowardsDest(self, dt):
         movement = (dt * self.speed)
-        nx, ny = self.gps.getCoordinates(self.next_dest_id)
+        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
         dx = nx - self.x
         dy = ny - self.y
         dist = math_utils.pythag(dx, dy)
@@ -87,7 +87,7 @@ class Car:
         if dist <= movement:
             new_source = self.next_dest_id
             self.next_dest_id = self.getNextDest()
-            self.current_road = self.gps.getRoad(new_source, self.next_dest_id)
+            self.current_edge = self.gps.getEdge(new_source, self.next_dest_id)
             self.speed_limit = self.getSpeedLimit()
             return
 
@@ -127,8 +127,8 @@ class Car:
         return dest_id
 
     def getSpeedLimit(self):
-        if self.current_road and self.current_road.speed_limit is not None:
-            return float(self.current_road.speed_limit)
+        if self.current_edge and self.current_edge.speed_limit is not None:
+            return float(self.current_edge.speed_limit)
         else:
             return self.speed_limit
 
@@ -147,9 +147,9 @@ class Car:
             "destination": self.dest_id,
             "speed": self.speed,
             " ": "",
-            "road name": self.current_road.name,
-            "speed limit": self.current_road.speed_limit,
-            "lanes": self.current_road.lanes,
-            "one way": str(self.current_road.is_one_way),
+            "road name": self.current_edge.name,
+            "speed limit": self.current_edge.speed_limit,
+            "lanes": self.current_edge.lanes,
+            "one way": str(self.current_edge.is_one_way),
         }
         return info

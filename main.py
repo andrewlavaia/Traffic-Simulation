@@ -35,7 +35,7 @@ def main():
     road_map = RoadMap(graph, window)
     road_map.draw()
 
-    gps = GPS(graph)
+    gps = GPS(graph, road_map)
 
     num_cars = 5
     cars = []
