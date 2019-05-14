@@ -174,13 +174,14 @@ class GraphWin(tk.Canvas):
         self.lastKey = None
         
         # scrolling options
-        self.scrollregion = 20000
+        self.scrollregion_x = self.width * 20
+        self.scrollregion_y = self.height * 20
         self.configure(
             scrollregion=(
-                -self.scrollregion/2.0, 
-                -self.scrollregion/2.0, 
-                self.scrollregion/2.0, 
-                self.scrollregion/2.0
+                -self.scrollregion_x/2.0, 
+                -self.scrollregion_y/2.0, 
+                self.scrollregion_x/2.0, 
+                self.scrollregion_y/2.0
             )
         )
         self.grid(row=0, column=0, sticky="nsew")
@@ -188,7 +189,9 @@ class GraphWin(tk.Canvas):
         self.grid_columnconfigure(0, weight=1)
 
         self.zoom_factor = 1.0
-        self.setCoords(0, self.height/self.zoom_factor, self.width/self.zoom_factor, 0)
+        self.setCoords(0, self.height, self.width, 0)
+        self.lastX = None
+        self.lastY = None
 
         if autoflush: _root.update()
 
@@ -252,55 +255,70 @@ class GraphWin(tk.Canvas):
         self.config(bg=color)
         self.__autoflush()
         
-    def setCoords(self, x1, y1, x2, y2):
-        """Set coordinates of window to run from (x1,y1) in the
-        lower-left corner to (x2,y2) in the upper-right corner."""
-        self.trans = Transform(self.width, self.height, x1, y1, x2, y2)
+    def setCoords(self, x0, y1, x1, y0):
+        """Set zoom adjusted transform coordinates, bottom left to top right."""
+        self.trans = Transform(self.width, self.height, x0, y1, x1, y0)
         self.redraw()
 
     def getCoords(self):
-        """Get coordinates of current view, bottom left to top right"""
-        xview = self.xview()
-        yview = self.yview()
-        x0 = ((xview[0] * self.scrollregion) - (self.scrollregion/2.0))
-        x1 = ((xview[1] * self.scrollregion) - (self.scrollregion/2.0))
-        y0 = ((yview[0] * self.scrollregion) - (self.scrollregion/2.0))
-        y1 = ((yview[1] * self.scrollregion) - (self.scrollregion/2.0))
-        x_range = self.width/self.zoom_factor
-        y_range = self.height/self.zoom_factor
-        x_adj = (self.width - x_range)/2.0
-        y_adj = (self.height - y_range)/2.0
-        return x0 + x_adj, y1 - y_adj, x1 - x_adj, y0 + y_adj
+        """Get zoom adjusted transform coordinates, bottom left to top right"""
+        x_adj, y_adj = self.getZoomAdj()
+        return x_adj, self.height - y_adj, self.width - x_adj, y_adj
 
     def getCanvasCoords(self):
-        """Coordinates of the canvas for the current view"""
+        # DEPRECATED
+        """Get zoom adjusted, canvas adjusted transform coordinates of the canvas for the current view"""
         x0, y1, x1, y0 = self.getCoords()
-        x0 += self.canvasx(0)/self.zoom_factor
-        x1 += self.canvasx(0)/self.zoom_factor
-        y0 += self.canvasy(0)/self.zoom_factor
-        y1 += self.canvasy(0)/self.zoom_factor
+        x0 += self.canvasx(0)
+        x1 += self.canvasx(0)
+        y0 += self.canvasy(0)
+        y1 += self.canvasy(0)
         return x0, y1, x1, y0
 
     def getCenterCoords(self):
-        """Coordinates of the center of the current view"""
+        # DEPRECATED
+        """Get zoom adjusted, canvas adjusted coordinates of the center of the current view"""
         x0, y1, x1, y0 = self.getCanvasCoords()
-        cx = x0 + (x1 - x0)/2.0
-        cy = y0 + (y1 - y0)/2.0
+        cx = x0 + self.width/2.0
+        cy = y0 + self.height/2.0
         return cx, cy
 
-    def centerViewOnCanvasPoint(self, point):
-        """sets the view to a specific point on the canvas"""
-        cx, cy = self.getCenterCoords()
-        x_adj = point.x - cx
-        y_adj = point.y - cy
+    def getZoomAdj(self):
+        """Get the zoom adjustment needed for transform coordinates"""
+        x_zoom_adj = (self.width - (self.width/self.zoom_factor))/2.0
+        y_zoom_adj = (self.height - (self.height/self.zoom_factor))/2.0
+        return x_zoom_adj, y_zoom_adj
 
-        x0, y1, x1, y0 = self.getCanvasCoords()
-        new_x0 = x0 + x_adj - self.canvasx(0)/self.zoom_factor
-        new_x1 = x1 + x_adj - self.canvasx(0)/self.zoom_factor
-        new_y0 = y0 + y_adj - self.canvasy(0)/self.zoom_factor
-        new_y1 = y1 + y_adj - self.canvasy(0)/self.zoom_factor
+    def getViewPoint(self):
+        """Get the top left point of the current view fraction"""
+        xview = self.xview()
+        yview = self.yview()
+        x = ((xview[0] * self.scrollregion_x) - (self.scrollregion_x/2.0))
+        y = ((yview[0] * self.scrollregion_y) - (self.scrollregion_y/2.0))
+        return x, y
 
-        self.setCoords(new_x0, new_y1, new_x1, new_y0)
+    def getCenterViewPoint(self):
+        """Get the center point of the current view fraction"""
+        x, y = self.getViewPoint()
+        cx = x + self.width/2.0
+        cy = y + self.height/2.0
+        return cx, cy
+
+    def convertPointToViewFraction(self, x, y):
+        """Converts x, y in world coordinates to view fraction"""
+        x_fraction = (x + (self.scrollregion_x/2.0))/self.scrollregion_x
+        y_fraction = (y + (self.scrollregion_y/2.0))/self.scrollregion_y
+        return x_fraction, y_fraction
+
+    def centerViewOnPoint(self, point):
+        """Adjust view fraction so that the given point is in the center"""
+        x_zoom_adj, y_zoom_adj = self.getZoomAdj()
+        new_x = point.x - self.width/2.0 
+        new_y = point.y - self.height/2.0
+        x_fraction, y_fraction = self.convertPointToViewFraction(new_x, new_y)
+        self.xview_moveto(x_fraction)
+        self.yview_moveto(y_fraction)
+        self.setCoords(*self.getCoords())  # why is this needed? slow
 
     def close(self):
         """Close the window"""
@@ -400,15 +418,20 @@ class GraphWin(tk.Canvas):
     def toScreen(self, x, y):
         trans = self.trans
         if trans:
-            return self.trans.screen(x,y)
+            x0, y0 = self.getViewPoint()
+            sx, sy = self.trans.screen(x - x0, y - y0)
+            sx += x0
+            sy += y0
+            return sx, sy
         else:
             return x,y
                       
-    def toWorld(self, x, y):
+    def toWorld(self, sx, sy):
         trans = self.trans
         if trans:
-            wx, wy = self.trans.world(x,y)
-            return wx + self.canvasx(0)/self.zoom_factor, wy + self.canvasy(0)/self.zoom_factor
+            x0, y0 = self.getViewPoint()
+            wx, wy = self.trans.world(sx, sy)
+            return x0 + wx, y0 + wy
         else:
             return x,y
 
@@ -426,28 +449,24 @@ class GraphWin(tk.Canvas):
     def scrollMove(self, e):
         x_diff = (e.x - self.lastX)/self.zoom_factor
         y_diff = (e.y - self.lastY)/self.zoom_factor
-        xview = self.xview()
-        yview = self.yview()
-        x0 = ((xview[0] * self.scrollregion) - (self.scrollregion/2.0))
-        x1 = ((xview[1] * self.scrollregion) - (self.scrollregion/2.0))
-        y0 = ((yview[0] * self.scrollregion) - (self.scrollregion/2.0))
-        y1 = ((yview[1] * self.scrollregion) - (self.scrollregion/2.0))
-        self.xview_moveto((x0 - x_diff + (self.scrollregion/2.0))/self.scrollregion)
-        self.yview_moveto((y0 - y_diff + (self.scrollregion/2.0))/self.scrollregion)
+        x0, y0 = self.getViewPoint()
+        self.xview_moveto((x0 - x_diff + (self.scrollregion_x/2.0))/self.scrollregion_x)
+        self.yview_moveto((y0 - y_diff + (self.scrollregion_y/2.0))/self.scrollregion_y)
         self.lastX = e.x
         self.lastY = e.y
         self.setCoords(*self.getCoords())
 
     def zoomIn(self):
-        self.zoom_factor += 0.1
+        self.zoom_factor += 0.5
         self.zoom()
 
     def zoomOut(self):
-        self.zoom_factor -= 0.1
+        self.zoom_factor -= 0.5
         self.zoom()
     
     def zoom(self, zoom_factor=None):
-        self.setCoords(*self.getCoords())
+        x0, y1, x1, y0 = self.getCoords()
+        self.setCoords(x0, y1, x1, y0)
 
         # TODO: 
         # add awesome perspective change options by modifying only the first and last coord
@@ -467,7 +486,6 @@ class GraphWin(tk.Canvas):
         
                       
 class Transform:
-
     """Internal class for 2-D coordinate transformations"""
     
     def __init__(self, w, h, xlow, ylow, xhigh, yhigh):
@@ -680,7 +698,7 @@ class _BBox(GraphicsObject):
 
         # need to convert to screen coordinates when rendering to screen
         screen_p1_x, screen_p1_y = self.canvas.toScreen(new_p1[0], new_p1[1])
-        screen_p2_x, screen_p2_y = self.canvas.toScreen(new_p2[0], new_p1[1])
+        screen_p2_x, screen_p2_y = self.canvas.toScreen(new_p2[0], new_p2[1])
         coords = [screen_p1_x, screen_p1_y, screen_p1_x, screen_p1_y]
         try:
             self.canvas.coords(self.id, coords)

@@ -110,14 +110,15 @@ def main():
 
         if info.follow_car:
             pxy = Point(info.selected_car.x, info.selected_car.y)
-            window.centerViewOnCanvasPoint(pxy)
+            window.centerViewOnPoint(pxy)
+            print(pxy, window.getCenterViewPoint())
 
     window.close
 
 
 def pause():
     """pause until user hits space again"""
-    cx, cy = window.getCenterCoords()
+    cx, cy = window.getCenterViewPoint()
     message = Text(Point(cx, cy), 'Paused')
     message.setSize(24)
     message.draw(window)
