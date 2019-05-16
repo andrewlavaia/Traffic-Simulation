@@ -110,8 +110,7 @@ def main():
 
         if info.follow_car:
             pxy = Point(info.selected_car.x, info.selected_car.y)
-            window.centerViewOnPoint(pxy)
-            print(pxy, window.getCenterViewPoint())
+            window.centerScreenOnPoint(pxy)
 
     window.close
 

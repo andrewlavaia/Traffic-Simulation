@@ -22,6 +22,7 @@ class RoadMap:
                     self.roads[edge.id] = Road2W(edge.id, p0, p1, edge.name, edge.lanes)
 
     def getRoadsWithinView(self):
+        # TODO -> fix this to use non-deprecated functions
         x0, y1, x1, y0 = self.canvas.getCanvasCoords()
         roads_within_view = set()
         for road in self.roads.values():
@@ -39,6 +40,11 @@ class RoadMap:
             road.draw(self.canvas)
 
         self.drawRoadNames()  # drawn last so road names are on top
+
+    def renderRoadNames(self):
+        # don't redraw new road names every frame, just move the existing ones
+        # until road is no longer in view?
+        pass
 
     def drawRoadNames(self):
         road_names = {}

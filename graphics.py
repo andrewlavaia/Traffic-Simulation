@@ -310,15 +310,14 @@ class GraphWin(tk.Canvas):
         y_fraction = (y + (self.scrollregion_y/2.0))/self.scrollregion_y
         return x_fraction, y_fraction
 
-    def centerViewOnPoint(self, point):
-        """Adjust view fraction so that the given point is in the center"""
-        x_zoom_adj, y_zoom_adj = self.getZoomAdj()
-        new_x = point.x - self.width/2.0 
-        new_y = point.y - self.height/2.0
-        x_fraction, y_fraction = self.convertPointToViewFraction(new_x, new_y)
+    def centerScreenOnPoint(self, point):
+        """Adjust view fraction so that the given point is in the center of the screen"""
+        sx, sy = self.toScreen(point.x, point.y)
+        cx = sx - self.width/2.0
+        cy = sy - self.height/2.0
+        x_fraction, y_fraction = self.convertPointToViewFraction(cx, cy)
         self.xview_moveto(x_fraction)
         self.yview_moveto(y_fraction)
-        self.setCoords(*self.getCoords())  # why is this needed? slow
 
     def close(self):
         """Close the window"""
@@ -420,8 +419,8 @@ class GraphWin(tk.Canvas):
         if trans:
             x0, y0 = self.getViewPoint()
             sx, sy = self.trans.screen(x - x0, y - y0)
-            sx += x0
-            sy += y0
+            sx += x0 * self.zoom_factor
+            sy += y0 * self.zoom_factor
             return sx, sy
         else:
             return x,y
@@ -431,7 +430,7 @@ class GraphWin(tk.Canvas):
         if trans:
             x0, y0 = self.getViewPoint()
             wx, wy = self.trans.world(sx, sy)
-            return x0 + wx, y0 + wy
+            return x0/self.zoom_factor + wx, y0/self.zoom_factor + wy
         else:
             return x,y
 
@@ -450,11 +449,11 @@ class GraphWin(tk.Canvas):
         x_diff = (e.x - self.lastX)/self.zoom_factor
         y_diff = (e.y - self.lastY)/self.zoom_factor
         x0, y0 = self.getViewPoint()
-        self.xview_moveto((x0 - x_diff + (self.scrollregion_x/2.0))/self.scrollregion_x)
-        self.yview_moveto((y0 - y_diff + (self.scrollregion_y/2.0))/self.scrollregion_y)
+        x_fraction, y_fraction = self.convertPointToViewFraction(x0 - x_diff, y0 - y_diff)
+        self.xview_moveto(x_fraction)
+        self.yview_moveto(y_fraction)
         self.lastX = e.x
         self.lastY = e.y
-        self.setCoords(*self.getCoords())
 
     def zoomIn(self):
         self.zoom_factor += 0.5
@@ -591,17 +590,15 @@ class GraphicsObject:
 
 
     def move(self, dx, dy):
-
-        """move object dx units in x direction and dy units in y
-        direction"""
+        """move object dx units in x direction and dy units in y direction"""
         
         self._move(dx,dy)
         canvas = self.canvas
         if canvas and not canvas.isClosed():
             trans = canvas.trans
             if trans:
-                x = dx/ trans.xscale 
-                y = -dy / trans.yscale
+                x = dx/trans.xscale 
+                y = -dy/trans.yscale
             else:
                 x = dx
                 y = dy
@@ -699,7 +696,7 @@ class _BBox(GraphicsObject):
         # need to convert to screen coordinates when rendering to screen
         screen_p1_x, screen_p1_y = self.canvas.toScreen(new_p1[0], new_p1[1])
         screen_p2_x, screen_p2_y = self.canvas.toScreen(new_p2[0], new_p2[1])
-        coords = [screen_p1_x, screen_p1_y, screen_p1_x, screen_p1_y]
+        coords = [screen_p1_x, screen_p1_y, screen_p2_x, screen_p2_y]
         try:
             self.canvas.coords(self.id, coords)
         except tk.TclError:
