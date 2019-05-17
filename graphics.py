@@ -148,7 +148,7 @@ class GraphWin(tk.Canvas):
     """A GraphWin is a toplevel window for displaying graphics."""
 
     def __init__(self, title="Graphics Window",
-                 width=200, height=200, autoflush=True):
+                 width=200, height=200, autoflush=True, scrollable=True):
         assert type(title) == type(""), "Title must be a string"
         master = tk.Toplevel(_root)
         master.protocol("WM_DELETE_WINDOW", self.close)
@@ -162,6 +162,7 @@ class GraphWin(tk.Canvas):
         self.mouseX = None
         self.mouseY = None
         self.bind("<Button-1>", self._onClick)
+        # self.bind("<ButtonRelease-1>", self._onRelease)
         self.bind("<B1-Motion>", self.scrollMove)
         self.bind_all("<Key>", self._onKey)
         self.height = int(height)
@@ -174,6 +175,7 @@ class GraphWin(tk.Canvas):
         self.lastKey = None
         
         # scrolling options
+        self.scrollable = scrollable
         self.scrollregion_x = self.width * 20
         self.scrollregion_y = self.height * 20
         self.configure(
@@ -193,7 +195,8 @@ class GraphWin(tk.Canvas):
         self.lastX = None
         self.lastY = None
 
-        if autoflush: _root.update()
+        if autoflush: 
+            _root.update()
 
     def __repr__(self):
         if self.isClosed():
@@ -285,8 +288,13 @@ class GraphWin(tk.Canvas):
 
     def getZoomAdj(self):
         """Get the zoom adjustment needed for transform coordinates"""
-        x_zoom_adj = (self.width - (self.width/self.zoom_factor))/2.0
-        y_zoom_adj = (self.height - (self.height/self.zoom_factor))/2.0
+        try:
+            x_zoom_adj = (self.width - (self.width/self.zoom_factor))/2.0
+            y_zoom_adj = (self.height - (self.height/self.zoom_factor))/2.0
+        except ZeroDivisionError:
+            self.zoom_factor = 0.0001
+            x_zoom_adj = (self.width - (self.width/self.zoom_factor))/2.0
+            y_zoom_adj = (self.height - (self.height/self.zoom_factor))/2.0
         return x_zoom_adj, y_zoom_adj
 
     def getViewPoint(self):
@@ -304,6 +312,11 @@ class GraphWin(tk.Canvas):
         cy = y + self.height/2.0
         return cx, cy
 
+    def getCenterScreenPoint(self):
+        """Get the center point of the screen in world coordinates"""
+        sx, sy = self.toScreen(self.width/2.0, self.height/2.0)
+        return self.toWorld(sx, sy)                
+
     def convertPointToViewFraction(self, x, y):
         """Converts x, y in world coordinates to view fraction"""
         x_fraction = (x + (self.scrollregion_x/2.0))/self.scrollregion_x
@@ -313,9 +326,9 @@ class GraphWin(tk.Canvas):
     def centerScreenOnPoint(self, point):
         """Adjust view fraction so that the given point is in the center of the screen"""
         sx, sy = self.toScreen(point.x, point.y)
-        cx = sx - self.width/2.0
-        cy = sy - self.height/2.0
-        x_fraction, y_fraction = self.convertPointToViewFraction(cx, cy)
+        x = sx - self.width/2.0
+        y = sy - self.height/2.0
+        x_fraction, y_fraction = self.convertPointToViewFraction(x, y)
         self.xview_moveto(x_fraction)
         self.yview_moveto(y_fraction)
 
@@ -446,6 +459,8 @@ class GraphWin(tk.Canvas):
             self._mouseCallback(Point(e.x, e.y))
 
     def scrollMove(self, e):
+        if not self.scrollable:
+            return
         x_diff = (e.x - self.lastX)/self.zoom_factor
         y_diff = (e.y - self.lastY)/self.zoom_factor
         x0, y0 = self.getViewPoint()
@@ -456,14 +471,14 @@ class GraphWin(tk.Canvas):
         self.lastY = e.y
 
     def zoomIn(self):
-        self.zoom_factor += 0.5
+        self.zoom_factor += 0.2
         self.zoom()
 
     def zoomOut(self):
-        self.zoom_factor -= 0.5
+        self.zoom_factor -= 0.2
         self.zoom()
     
-    def zoom(self, zoom_factor=None):
+    def zoom(self):
         x0, y1, x1, y0 = self.getCoords()
         self.setCoords(x0, y1, x1, y0)
 

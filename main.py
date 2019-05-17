@@ -117,7 +117,7 @@ def main():
 
 def pause():
     """pause until user hits space again"""
-    cx, cy = window.getCenterViewPoint()
+    cx, cy = window.getCenterScreenPoint()
     message = Text(Point(cx, cy), 'Paused')
     message.setSize(24)
     message.draw(window)
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
     window.addMenu(menu_options)
 
-    secondary_window = GraphWin('Info Window', 512, 512, autoflush=False)
+    secondary_window = GraphWin('Info Window', 512, 512, autoflush=False, scrollable=False)
 
     main()
 
