@@ -49,12 +49,11 @@ class Graph:
                     # create edge between current node and prev_node
 
                     # TODO
-                    # calculate distance between each node
                     # collapse edges on the same straight line when no other connections
                     # (in addition to reducing number of calculations and shapes drawn on screen
                     #  this should also be able to fix anamolous lane issues between similar edges)
 
-                    distance = 1
+                    distance = self.distanceBetweenVertices(prev_node.id, node.id)
                     edge = Edge(prev_node.id, node.id, distance, way.tags)
                     self.addEdge(edge)
                     if way.tags.get('oneway') != 'yes':
@@ -68,6 +67,14 @@ class Graph:
 
     def adjEdges(self, v):
         return self.vertices[v.id].getEdges()
+
+    def distanceBetweenVertices(self, vertex_id_1, vertex_id_2):
+        v1 = self.vertices[vertex_id_1]
+        v2 = self.vertices[vertex_id_2]
+        dx = v2.x - v1.x
+        dy = v2.y - v1.y
+        dist = math_utils.pythag(dx, dy)
+        return dist
 
 
 class Edge:

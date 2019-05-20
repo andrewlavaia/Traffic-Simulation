@@ -22,14 +22,12 @@ class RoadMap:
                     self.roads[edge.id] = Road2W(edge.id, p0, p1, edge.name, edge.lanes)
 
     def getRoadsWithinView(self):
-        # TODO -> fix this to use non-deprecated functions
-        x0, y1, x1, y0 = self.canvas.getCanvasCoords()
+        x0, y0, x1, y1 = self.canvas.getScreenPoints()
         roads_within_view = set()
         for road in self.roads.values():
             if ((x0 < road.p0.x < x1 and y0 < road.p0.y < y1) or
                     (x0 < road.p1.x < x1 and y0 < road.p1.y < y1)):
                 roads_within_view.add(road)
-
         return roads_within_view
 
     def draw(self):

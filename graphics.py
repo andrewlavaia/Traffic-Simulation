@@ -268,24 +268,6 @@ class GraphWin(tk.Canvas):
         x_adj, y_adj = self.getZoomAdj()
         return x_adj, self.height - y_adj, self.width - x_adj, y_adj
 
-    def getCanvasCoords(self):
-        # DEPRECATED
-        """Get zoom adjusted, canvas adjusted transform coordinates of the canvas for the current view"""
-        x0, y1, x1, y0 = self.getCoords()
-        x0 += self.canvasx(0)
-        x1 += self.canvasx(0)
-        y0 += self.canvasy(0)
-        y1 += self.canvasy(0)
-        return x0, y1, x1, y0
-
-    def getCenterCoords(self):
-        # DEPRECATED
-        """Get zoom adjusted, canvas adjusted coordinates of the center of the current view"""
-        x0, y1, x1, y0 = self.getCanvasCoords()
-        cx = x0 + self.width/2.0
-        cy = y0 + self.height/2.0
-        return cx, cy
-
     def getZoomAdj(self):
         """Get the zoom adjustment needed for transform coordinates"""
         try:
@@ -311,6 +293,19 @@ class GraphWin(tk.Canvas):
         cx = x + self.width/2.0
         cy = y + self.height/2.0
         return cx, cy
+
+    def getScreenPoints(self):
+        """Get the top left and bottom right points of the screen in world coordinates"""
+        sx0, sy0 = self.toScreen(0, 0)
+        sx1, sy1 = self.toScreen(self.width, self.height)
+        wx0, wy0 = self.toWorld(sx0, sy0)
+        wx1, wy1 = self.toWorld(sx1, sy1)
+        x_zoom_adj, y_zoom_adj = self.getZoomAdj()
+        wx0 += x_zoom_adj
+        wy0 += y_zoom_adj
+        wx1 -= x_zoom_adj
+        wy1 -= y_zoom_adj
+        return wx0, wy0, wx1, wy1
 
     def getCenterScreenPoint(self):
         """Get the center point of the screen in world coordinates"""
