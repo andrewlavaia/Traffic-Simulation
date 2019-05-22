@@ -17,6 +17,7 @@ from openstreetmap import query_roads_by_lat_lon, save_raw_json_map_data
 def main():
     window.setBackground('white')
     window.clear()
+    window.resetView()
     secondary_window.setBackground('white')
     secondary_window.clear()
 

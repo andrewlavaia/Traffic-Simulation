@@ -115,7 +115,6 @@ class TestToScreen(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_00_to_screen_with_default_view_and_2x_zoom(self):
-        self.setUp()
         self.window.zoom_factor = 2.0
         self.window.setCoords(*self.window.getCoords())
         print(self.window.getCoords())
@@ -236,7 +235,6 @@ class TestcenterScreenOnPoint(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_center_view_on_offset_before_2x_zoom(self):
-        self.setUp()
         self.window.centerScreenOnPoint(graphics.Point(1024, 768))
         actual = tuple(self.window.getCenterViewPoint())
         expected = (1024, 768)
@@ -248,7 +246,6 @@ class TestcenterScreenOnPoint(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_center_view_on_offset_after_2x_zoom(self):
-        self.setUp()
         self.window.zoom_factor = 2.0
         self.window.centerScreenOnPoint(graphics.Point(1024, 768))
         actual = tuple(self.window.getCenterViewPoint())

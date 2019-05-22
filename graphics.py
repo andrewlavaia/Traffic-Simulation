@@ -257,7 +257,7 @@ class GraphWin(tk.Canvas):
         self.__checkOpen() 
         self.config(bg=color)
         self.__autoflush()
-        
+
     def setCoords(self, x0, y1, x1, y0):
         """Set zoom adjusted transform coordinates, bottom left to top right."""
         self.trans = Transform(self.width, self.height, x0, y1, x1, y0)
@@ -326,6 +326,12 @@ class GraphWin(tk.Canvas):
         x_fraction, y_fraction = self.convertPointToViewFraction(x, y)
         self.xview_moveto(x_fraction)
         self.yview_moveto(y_fraction)
+
+    def resetView(self):
+        self.zoom_factor = 1.0
+        self.setCoords(*self.getCoords())
+        center = Point(self.width/2.0, self.height/2.0)
+        self.centerScreenOnPoint(center)
 
     def close(self):
         """Close the window"""
@@ -505,8 +511,8 @@ class Transform:
         yspan = (yhigh-ylow)
         self.xbase = xlow
         self.ybase = yhigh
-        self.xscale = xspan/float(w-1)
-        self.yscale = yspan/float(h-1)
+        self.xscale = xspan/float(w)
+        self.yscale = yspan/float(h)
         
     def screen(self,x,y):
         # Returns x,y in screen (actually window) coordinates
