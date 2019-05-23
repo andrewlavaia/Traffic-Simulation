@@ -1,6 +1,7 @@
 import math
 import heapq
 import random
+import copy
 import overpy
 
 import file_utils
@@ -24,7 +25,7 @@ class Graph:
         data = file_utils.load_map(filename)
         for vertex_data in data["intersections"]:
             intersection_id, x, y = vertex_data
-            self.vertices[intersection_id] = Vertex(intersection_id, x, y)
+            self.vertices[intersection_id] = Vertex(intersection_id, x, y, None)
             self.vertex_cnt += 1
 
         for connection in data["connections"]:
@@ -40,30 +41,44 @@ class Graph:
             if self.vertices.get(node.id) is None:
                 global_x, global_y = lat_lon_converter.latLonToGlobalXY(node.lat, node.lon)
                 local_x, local_y = lat_lon_converter.globalXYToLocalXY(global_x, global_y)
-                self.vertices[node.id] = Vertex(node.id, local_x, local_y)
+                self.vertices[node.id] = Vertex(node.id, local_x, local_y, node.tags)
 
         for way in result.ways:
             prev_node = None
+            mid_node = None
             for node in way.nodes:
-                if prev_node is not None:
-                    # create edge between current node and prev_node
+                if prev_node is None:
+                    prev_node = node
+                    continue
 
-                    # TODO
-                    # collapse edges on the same straight line when no other connections
-                    # (in addition to reducing number of calculations and shapes drawn on screen
-                    #  this should also be able to fix anamolous lane issues between similar edges)
+                if mid_node is None:
+                    mid_node = node
+                    continue
 
-                    distance = self.distanceBetweenVertices(prev_node.id, node.id)
-                    edge = Edge(prev_node.id, node.id, distance, way.tags)
-                    self.addEdge(edge)
-                    if way.tags.get('oneway') != 'yes':
-                        other_edge = Edge(node.id, prev_node.id, distance, way.tags)
-                        self.addEdge(other_edge)
-                prev_node = node
+                if self.canVerticesBeReduced(prev_node.id, mid_node.id, node.id):
+                    mid_node = node
+                    continue
+
+                self.addEdges(prev_node.id, mid_node.id, way.tags)
+                prev_node = mid_node
+                mid_node = node
+
+            self.addEdges(prev_node.id, mid_node.id, way.tags)
+
+        self.removeUnusedVertices()
 
     def addEdge(self, edge):
         self.vertices[edge.source].addEdge(edge)
         self.edge_cnt += 1
+
+    def addEdges(self, v1, v2, tags):
+        if v1 and v2 and v1 != v2:
+            distance = self.distanceBetweenVertices(v1, v2)
+            edge = Edge(v1, v2, distance, tags)
+            self.addEdge(edge)
+            if tags.get('oneway') != 'yes':
+                other_edge = Edge(v2, v1, distance, tags)
+                self.addEdge(other_edge)
 
     def adjEdges(self, v):
         return self.vertices[v.id].getEdges()
@@ -75,6 +90,44 @@ class Graph:
         dy = v2.y - v1.y
         dist = math_utils.pythag(dx, dy)
         return dist
+
+    def canVerticesBeReduced(self, vertex_id_1, vertex_id_2, vertex_id_3):
+        """Check whether 3 vertices can be reduced to 2 vertices"""
+        v2 = self.vertices[vertex_id_2]
+        if v2.is_intersection:
+            return False
+
+        v1 = self.vertices[vertex_id_1]
+        dx1 = v2.x - v1.x
+        dy1 = v2.y - v1.y
+        dist = math_utils.pythag(dx1, dy1)
+        if dist < 10.0:
+            return True
+
+        v3 = self.vertices[vertex_id_3]
+        dx2 = v3.x - v2.x
+        dy2 = v3.y - v2.y
+        angle1 = math_utils.angle(dx1, dy1)
+        angle2 = math_utils.angle(dx2, dy2)
+        if abs(angle2 - angle1) < 0.10:  # ~5.7 degrees
+            return True
+
+        return False
+
+    def removeUnusedVertices(self):
+        """Remove all vertices that aren't a source or dest for an edge"""
+        vertices_with_all_edges = copy.deepcopy(self.vertices)
+        for vertex_id, vertex in self.vertices.items():
+            for edge in vertex.edges:
+                vertices_with_all_edges[edge.dest].edges.append(edge.id)
+
+        vertices_to_remove = set()
+        for vertex_id, vertex in vertices_with_all_edges.items():
+            if not vertex.edges:
+                vertices_to_remove.add(vertex_id)
+
+        for vertex_id in vertices_to_remove:
+            self.vertices.pop(vertex_id, None)
 
 
 class Edge:
@@ -99,11 +152,12 @@ class Edge:
 
 
 class Vertex:
-    def __init__(self, vertex_id, x, y):
+    def __init__(self, vertex_id, x, y, tags):
         self.id = vertex_id
         self.edges = []  # list of connected Edges
         self.x = x
         self.y = y
+        self.is_intersection = bool(tags.get("highway") == "traffic_signals")
 
     def __eq__(self, that):
         return self.id == that.id

@@ -29,10 +29,8 @@ def main():
     llc = LatLonConverter(window, S, W, N, E)
 
     graph = Graph()
-    # graph.loadMap("map_default.yml")
     graph.loadOpenStreetMapData("map_data.txt", llc)
 
-    # graph.randomMap(25, 50)
     road_map = RoadMap(graph, window)
     road_map.draw()
 
