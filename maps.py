@@ -7,8 +7,8 @@ class RoadMap:
     """graphical representation of a graph"""
     def __init__(self, graph, canvas):
         self.canvas = canvas
-        self.intersections = {}
-        self.roads = {}
+        self.intersections = {}  # vertex_id: Intersection
+        self.roads = {}          # edge_id: Road
 
         for vertex in graph.vertices.values():
             self.intersections[vertex.id] = Intersection(vertex)
@@ -63,6 +63,10 @@ class RoadMap:
             else:
                 intersection.shape.setFill("")
 
+    def showInfo(self, map_object):
+        print(map_object)
+        # TODO implement an on-screen display or pop-up window for this
+
 
 class Road:
     """graphical representation of a single edge - one way road"""
@@ -97,6 +101,11 @@ class Road:
         p0_tuple = (self.p0.x, self.p0.y)
         p1_tuple = (self.p1.x, self.p1.y)
         return hash((p0_tuple, p1_tuple))
+
+    def __repr__(self):
+        return "Road {0}: {1} ({2}, {3}) - ({4}, {5})".format(
+            self.id, self.name, self.p0.x, self.p0.y, self.p1.x, self.p1.y
+        )
 
     @staticmethod
     def createLine(p0, p1, width):
@@ -179,5 +188,15 @@ class Intersection:
         self.radius = 3
         self.shape = Circle(Point(self.x, self.y), self.radius)
 
+    def __repr__(self):
+        return "Intersection {0}: ({1}, {2})".format(self.id, self.x, self.y)
+
     def draw(self, canvas):
         self.shape.draw(canvas)
+
+    def clicked(self, p):
+        xmin = self.x - self.radius
+        xmax = self.x + self.radius
+        ymin = self.y - self.radius
+        ymax = self.y + self.radius
+        return (xmin <= p.getX() <= xmax and ymin <= p.getY() <= ymax)

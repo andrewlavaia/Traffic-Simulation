@@ -82,11 +82,18 @@ def main():
                 for car in cars:
                     if car.clicked(last_clicked_pt):
                         info.setSelectedCar(car)
+                        continue
+
+                for intersection in road_map.intersections.values():
+                    if intersection.clicked(last_clicked_pt):
+                        road_map.showInfo(intersection)
+                        continue
 
             last_clicked_pt = secondary_window.checkMouse()
             if last_clicked_pt is not None:
                 for button in info.buttons:
                     button.clicked(last_clicked_pt)
+                    continue
 
         except GraphicsError:
             pass

@@ -13,8 +13,8 @@ class LatLonConverter:
         # get global reference points to scale local x y appropriately
         self.tlx, self.tly = self.latLonToGlobalXY(self.top_lat, self.left_lon)
         self.brx, self.bry = self.latLonToGlobalXY(self.bot_lat, self.right_lon)
-        self.x_range = abs(self.brx - self.tlx)
-        self.y_range = abs(self.bry - self.tly)
+        self.x_range = self.brx - self.tlx
+        self.y_range = self.bry - self.tly
 
     def latLonToGlobalXY(self, lat, lon):
         """converts latitude and longitude to global planar coordinates"""
@@ -27,8 +27,8 @@ class LatLonConverter:
 
     def globalXYToLocalXY(self, x, y):
         """converts global planar coordinates to local coordinates"""
-        local_x = (abs(self.tlx - x)/self.x_range) * self.canvas_width
-        local_y = (abs(self.tly - y)/self.y_range) * self.canvas_height
+        local_x = ((x - self.tlx)/self.x_range) * self.canvas_width
+        local_y = ((y - self.tly)/self.y_range) * self.canvas_height
         return local_x, local_y
 
     def latLonToLocalXY(self, lat, lon):

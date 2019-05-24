@@ -58,8 +58,7 @@ class Car:
         xmax = max(x_points)
         ymin = min(y_points)
         ymax = max(y_points)
-        return (xmin <= p.getX() <= xmax and
-                ymin <= p.getY() <= ymax)
+        return (xmin <= p.getX() <= xmax and ymin <= p.getY() <= ymax)
 
     def checkCollision(self, other):
         """check whether this car is too close to another car"""
@@ -117,7 +116,7 @@ class Car:
             self.resetCurrentLocation()
             return self.newRoute()
 
-        print("Car {0} moving from {1} to {2}".format(self.id, new_source_id, new_dest_id))
+        # print("Car {0} moving from {1} to {2}".format(self.id, new_source_id, new_dest_id))
         return new_source_id, new_dest_id, new_route
 
     def getNextDest(self):
