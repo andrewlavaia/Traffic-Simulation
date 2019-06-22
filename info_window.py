@@ -28,10 +28,7 @@ class InfoWindow:
         self.buttons = [self.show_route_btn, self.follow_btn]
 
     def setSelectedCar(self, car):
-        if self.selected_car is not None:
-            self.selected_car.shape.setFill("white")
         self.selected_car = car
-        self.selected_car.shape.setFill("yellow")
 
     def showRoute(self):
         self.show_route = not self.show_route

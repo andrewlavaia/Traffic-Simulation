@@ -6,7 +6,7 @@ from graphics import Point
 class GPS:
     def __init__(self, graph, road_map):
         self.graph = graph
-        self.road_map = road_map
+        # self.road_map = road_map
 
     def getCoordinates(self, vertex_id):
         vertex = self.graph.vertices[vertex_id]
@@ -16,9 +16,10 @@ class GPS:
         x, y = self.getCoordinates(vertex_id)
         if edge is None:
             return (x, y)
-        road = self.road_map.roads[edge.id]
-        lane_adj_point = road.getLaneAdjustedPoint(Point(x, y), lane_index)
-        return (lane_adj_point.x, lane_adj_point.y)
+        # road = self.road_map.roads[edge.id]
+        # lane_adj_point = road.getLaneAdjustedPoint(Point(x, y), lane_index)
+        # return (lane_adj_point.x, lane_adj_point.y)
+        return (x, y)
 
     def getEdge(self, source_vertex_id, dest_vertex_id):
         possible_edges = self.graph.vertices[source_vertex_id].getEdges()
