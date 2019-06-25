@@ -61,6 +61,7 @@ def main():
 
     info = InfoWindow(secondary_window)
     info.setSelectedCar(cars[0])
+    car_shapes[info.selected_car.index].shape.setFill("yellow")
 
     # initialize simulation variables
     simTime = 0.0
@@ -180,7 +181,7 @@ if __name__ == '__main__':
     work_requested_q = mp.Queue()
 
     # initialize workers
-    num_workers = 4
+    num_workers = 1
     workers = []
     for n in range(0, num_workers):
         workers.append(mp.Process(target=CollisionSystem.processWorkRequests,

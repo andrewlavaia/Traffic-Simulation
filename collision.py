@@ -34,6 +34,9 @@ class Event:
             return False
         return True
 
+# TODO add support for collisions at intersections
+# need to re-predict all collisions at each intersection
+
 
 # Collision System is used to predict when and how cars will collide
 class CollisionSystem:
@@ -83,8 +86,9 @@ class CollisionSystem:
             a = evt.a
             b = evt.b
             if isinstance(b, int):
-                cars[a].throttleDown()
-                cars[b].throttleUp()
+                cars[a].throttleDown(b)
+                cars[a].last_collision = b
+                cars[b].last_collision = a
                 cars[a].collision_count += 1
                 cars[b].collision_count += 1
                 work_q.put_nowait(WorkRequest(a, nextLogicTick, 10000, cars))

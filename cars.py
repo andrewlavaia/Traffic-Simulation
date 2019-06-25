@@ -21,12 +21,22 @@ class Car:
         self.next_dest_id = self.getNextDest()
         self.current_edge = self.gps.getEdge(self.source_id, self.next_dest_id)
         self.collision_count = 0
+        self.last_collision = None
+        self.vx = self.speed/2.0
+        self.vy = self.speed/2.0
+
+        # make sure car moves twice before predicting collisions
+        # to ensure all movement vectors are properly initialized
+        self.moveTowardsDest(1)
+        self.moveTowardsDest(1)
 
     def __eq__(self, other):
         return self.id == other.id
 
-    def throttleDown(self):
-        self.speed *= 0.9
+    def throttleDown(self, collision):
+        if self.last_collision == collision:
+            return
+        self.speed *= 0.1
 
     def throttleUp(self):
         self.speed *= 1.1
@@ -41,8 +51,8 @@ class Car:
         dy = that.y - self.y
 
         # speed
-        dvx = that.speed - self.speed
-        dvy = that.speed - self.speed
+        dvx = that.vx - self.vx
+        dvy = that.vy - self.vy
 
         # collision prediction
         dvdr = dx*dvx + dy*dvy
@@ -51,7 +61,7 @@ class Car:
         dvdv = dvx*dvx + dvy*dvy
         drdr = dx*dx + dy*dy
 
-        sigma = 0
+        sigma = self.height + that.height
         d = (dvdr*dvdr) - (dvdv * (drdr - sigma*sigma))
         if d <= 0:
             return math.inf
@@ -61,12 +71,17 @@ class Car:
 
         return -1 * (dvdr + math.sqrt(d)) / dvdv
 
-    def moveTowardsDest(self, dt):
-        movement = (dt * self.speed)
+    def getDistancesTowardsDest(self):
         nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
         dx = nx - self.x
         dy = ny - self.y
         dist = math_utils.pythag(dx, dy)
+        return dx, dy, dist
+
+    def moveTowardsDest(self, dt):
+        self.throttleUp()
+        movement = (dt * self.speed)
+        dx, dy, dist = self.getDistancesTowardsDest()
 
         if dist <= movement:
             new_source = self.next_dest_id
@@ -75,6 +90,8 @@ class Car:
             self.speed_limit = self.getSpeedLimit()
             return
 
+        self.vx = (dx/dist) * self.speed
+        self.vy = (dy/dist) * self.speed
         mv_x = (dx/dist) * movement
         mv_y = (dy/dist) * movement
 
@@ -130,7 +147,7 @@ class Car:
             "source": self.source_id,
             "destination": self.dest_id,
             "speed": self.speed,
-            " ": "",
+            "vx, vy": "{0:.2f}, {1:.2f}".format(self.vx, self.vy),
             "road name": self.current_edge.name,
             "speed limit": self.current_edge.speed_limit,
             "lanes": self.current_edge.lanes,
