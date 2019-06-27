@@ -3,7 +3,8 @@ import math_utils
 
 
 class Car:
-    def __init__(self, gps, source_id):
+    def __init__(self, index, gps, source_id):
+        self.index = index
         self.id = id(self)
         self.gps = gps
         self.source_id = source_id
@@ -18,6 +19,7 @@ class Car:
         self.source_id, self.dest_id, self.route = self.newRoute()
         self.next_dest_id = self.getNextDest()
         self.current_edge = self.gps.getEdge(self.source_id, self.next_dest_id)
+        self.cell_num = None
         # print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
         # car shape must be a polygon because rectangles are represented as two points
@@ -34,35 +36,9 @@ class Car:
     def __eq__(self, other):
         return self.id == other.id
 
-    def draw(self, canvas):
-        self.shape.draw(canvas)
-
-    def rotate(self, dx, dy):
-        if dx == 0 and dy == 0:
-            return
-        new_direction = math_utils.degrees_clockwise(dx, dy)
-        degrees = float(self.direction - new_direction)
-        self.shape.rotate(degrees)
-        self.direction = new_direction
-
-    def render(self, canvas):
-        dx = self.x - self.shape.center.x
-        dy = self.y - self.shape.center.y
-        self.rotate(dx, dy)
-        self.shape.move(dx, dy)
-
-    def clicked(self, p):
-        x_points = [point.x for point in self.shape.points]
-        y_points = [point.y for point in self.shape.points]
-        xmin = min(x_points)
-        xmax = max(x_points)
-        ymin = min(y_points)
-        ymax = max(y_points)
-        return (xmin <= p.getX() <= xmax and ymin <= p.getY() <= ymax)
-
     def checkCollision(self, other):
         """check whether this car is too close to another car"""
-        required_delta = 10
+        required_delta = 5
         x_overlap = (abs(self.x - other.x) * 2) < (self.width + other.width) + required_delta
         y_overlap = (abs(self.y - other.y) * 2) < (self.height + other.height) + required_delta
         collision_detected = x_overlap and y_overlap
@@ -112,7 +88,7 @@ class Car:
         if new_route is None:
             # Car reached a dead end. Seriously, why do one way dead ends with no exit even exist?
             # TODO -> systematically remove these from the map data when a car hits one?
-            print("Car {0} reached a dead end at {1}".format(self.id, new_source_id))
+            # print("Car {0} reached a dead end at {1}".format(self.id, new_source_id))
             self.resetCurrentLocation()
             return self.newRoute()
 
@@ -152,3 +128,71 @@ class Car:
             "one way": str(self.current_edge.is_one_way),
         }
         return info
+
+
+class CarShape():
+    """Defines a shape object to be used for drawing the corresponding
+    Car object with the same index"""
+    def __init__(self, index, window, car):
+        self.index = index
+        self.window = window
+        self.x = car.x
+        self.y = car.y
+        self.color = "white"
+        self.height = car.height
+        self.width = car.width
+        self.direction = 0
+
+        # car shape must be a polygon because rectangles are represented as two points
+        # which prevents proper rotations and translations
+        center = Point(self.x, self.y)
+        p1 = Point(self.x - (self.width/2), self.y - (self.height/2))
+        p2 = Point(self.x + (self.width/2), self.y - (self.height/2))
+        p3 = Point(self.x + (self.width/2), self.y + (self.height/2))
+        p4 = Point(self.x - (self.width/2), self.y + (self.height/2))
+        points = [p1, p2, p3, p4]
+        self.shape = Polygon(center, points)
+        self.shape.setFill(self.color)
+
+    def draw(self):
+        self.shape.draw(self.window)
+
+    def render(self):
+        dx = self.x - self.shape.center.x
+        dy = self.y - self.shape.center.y
+        self.rotate(dx, dy)
+        self.shape.move(dx, dy)
+
+    def rotate(self, dx, dy):
+        if dx == 0 and dy == 0:
+            return
+        new_direction = math_utils.degrees_clockwise(dx, dy)
+        degrees = float(self.direction - new_direction)
+        self.shape.rotate(degrees)
+        self.direction = new_direction
+
+    def clicked(self, p):
+        x_points = [point.x for point in self.shape.points]
+        y_points = [point.y for point in self.shape.points]
+        xmin = min(x_points)
+        xmax = max(x_points)
+        ymin = min(y_points)
+        ymax = max(y_points)
+        return (xmin <= p.getX() <= xmax and ymin <= p.getY() <= ymax)
+
+
+class CarFactory:
+    """Used to create a Car with an associated CarShape"""
+    def __init__(self, window, gps, cars, car_shapes):
+        self.window = window
+        self.gps = gps
+        self.cars = cars
+        self.car_shapes = car_shapes
+        self.count = 0
+
+    def create(self):
+        index = self.count
+        car = Car(index, self.gps, self.gps.randomVertex())
+        self.cars.append(Car(index, self.gps, self.gps.randomVertex()))
+        self.car_shapes.append(CarShape(index, self.window, self.cars[index]))
+        self.count += 1

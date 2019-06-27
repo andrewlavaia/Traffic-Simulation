@@ -6,10 +6,10 @@ from graphics import GraphWin, GraphicsError, Text, Point
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
-from cars import Car
+from cars import Car, CarShape, CarFactory
 from gps import GPS
 from info_window import InfoWindow
-from collision import processCollisions
+from collision import CollisionSystem
 from latlon import LatLonConverter
 from openstreetmap import query_roads_by_lat_lon, save_raw_json_map_data
 
@@ -36,15 +36,22 @@ def main():
 
     gps = GPS(graph, road_map)
 
-    num_cars = 5
     cars = []
-    for i in range(0, num_cars):
-        car = Car(gps, gps.randomVertex())
-        car.draw(window)
-        cars.append(car)
+    car_shapes = []
+    car_factory = CarFactory(window, gps, cars, car_shapes)
+
+    num_cars = 50
+    for i in range(num_cars):
+        car_factory.create()
+
+    for car_shape in car_shapes:
+        car_shape.draw()
+
+    collision_system = CollisionSystem(window, cars)
 
     info = InfoWindow(secondary_window)
     info.setSelectedCar(cars[0])
+    car_shapes[info.selected_car.index].shape.setFill("yellow")
 
     # initialize simulation variables
     simTime = 0.0
@@ -79,9 +86,11 @@ def main():
 
             last_clicked_pt = window.checkMouse()
             if last_clicked_pt is not None:
-                for car in cars:
-                    if car.clicked(last_clicked_pt):
-                        info.setSelectedCar(car)
+                for car_shape in car_shapes:
+                    if car_shape.clicked(last_clicked_pt):
+                        car_shapes[info.selected_car.index].shape.setFill("white")
+                        info.setSelectedCar(cars[car_shape.index])
+                        car_shapes[info.selected_car.index].shape.setFill("yellow")
                         continue
 
                 for intersection in road_map.intersections.values():
@@ -100,9 +109,13 @@ def main():
 
         # update simulation logic
         while lag > TIME_PER_TICK:
-            processCollisions(cars)
+            collision_system.processCollisions(cars)
             for car in cars:
                 car.moveTowardsDest(TIME_PER_TICK)
+                car_shape = car_shapes[car.index]
+                car_shape.x = cars[car.index].x
+                car_shape.y = cars[car.index].y
+            collision_system.updateCells(cars)
 
             nextLogicTick += TIME_PER_TICK
             lag -= TIME_PER_TICK
@@ -110,8 +123,8 @@ def main():
         # render updates to window
         road_map.drawRoadNames()
         road_map.drawRoute(info.selected_car.route, info.show_route)
-        for car in cars:
-            car.render(window)
+        for car_shape in car_shapes:
+            car_shape.render()
         info.updateTable()
 
         if info.follow_car:
