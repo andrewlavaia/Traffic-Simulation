@@ -110,9 +110,7 @@ class QuadTree:
 
     def getCellContents(self, x, y):
         cell = self.findCell(x, y)
-        if not cell:
-            return None
-        return cell.contents
+        return cell.contents if cell else None
 
     def findCell(self, x, y):
         if not self.withinBounds(x, y):
@@ -154,36 +152,19 @@ class QuadTree:
 
 class CollisionSystem(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def processCollisions(self, cars):
+    def getNearbyObjects(self, car):
         pass
 
     @abc.abstractmethod
     def updateObjects(self, cars):
         pass
 
-
-class GridCollisionSystem(CollisionSystem):
-    def __init__(self, window, cars):
-        self.num_rows = 32
-        self.num_cols = 32
-        self.x_min = -window.scrollregion_x/2.0
-        self.y_min = -window.scrollregion_y/2.0
-        self.x_max = window.scrollregion_x/2.0
-        self.y_max = window.scrollregion_y/2.0
-        self.grid = Grid(
-            self.num_rows, self.num_cols, self.x_min, self.x_max, self.y_min, self.y_max
-        )
-
-        for car in cars:
-            car.cell_num = self.grid.getCellNum(car.x, car.y)
-            self.grid.insertIntoCell(car.cell_num, car.index)
-
     def processCollisions(self, cars):
         already_processed = set()
         for car in cars:
             collision_detected = False
-            cars_indices_in_cell = self.grid.getCellContents(car.cell_num)
-            for car_index in cars_indices_in_cell:
+            nearby_cars = self.getNearbyObjects(car)
+            for car_index in nearby_cars:
                 other = cars[car_index]
                 if car == other or car.index in already_processed:
                     continue
@@ -196,6 +177,26 @@ class GridCollisionSystem(CollisionSystem):
 
             if not collision_detected:
                 car.throttleUp()
+
+
+class GridCollisionSystem(CollisionSystem):
+    def __init__(self, window, cars):
+        self.num_rows = 128
+        self.num_cols = 128
+        self.x_min = -window.scrollregion_x/2.0
+        self.y_min = -window.scrollregion_y/2.0
+        self.x_max = window.scrollregion_x/2.0
+        self.y_max = window.scrollregion_y/2.0
+        self.grid = Grid(
+            self.num_rows, self.num_cols, self.x_min, self.x_max, self.y_min, self.y_max
+        )
+
+        for car in cars:
+            car.cell_num = self.grid.getCellNum(car.x, car.y)
+            self.grid.insertIntoCell(car.cell_num, car.index)
+
+    def getNearbyObjects(self, car):
+        return self.grid.getCellContents(car.cell_num)
 
     def updateObjects(self, cars):
         for car in cars:
@@ -226,27 +227,11 @@ class QuadTreeCollisionSystem(CollisionSystem):
             car.cell_num = self.quad.findCell(car.x, car.y)
             self.quad.insertIntoCell(car.x, car.y, car.index)
 
-    def processCollisions(self, cars):
-        already_processed = set()
-        for car in cars:
-            collision_detected = False
-            cars_indices_in_cell = self.quad.getCellContents(car.x, car.y)
-            if not cars_indices_in_cell:
-                continue
-
-            for car_index in cars_indices_in_cell:
-                other = cars[car_index]
-                if car == other or car.index in already_processed:
-                    continue
-
-                if car.checkCollision(other):
-                    collision_detected = True
-                    car.throttleDown()
-                    other.throttleUp()
-                    already_processed.update({car.index, other.index})
-
-            if not collision_detected:
-                car.throttleUp()
+    def getNearbyObjects(self, car):
+        nearby_objects = self.quad.getCellContents(car.x, car.y)
+        if not nearby_objects:
+            return []
+        return nearby_objects
 
     def updateObjects(self, cars):
         for car in cars:
