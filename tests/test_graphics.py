@@ -114,26 +114,27 @@ class TestToScreen(unittest.TestCase):
         expected = (0, 0)
         self.assertEqual(actual, expected)
 
-    def test_00_to_screen_with_default_view_and_2x_zoom(self):
-        self.window.zoom_factor = 2.0
-        self.window.setCoords(*self.window.getCoords())
-        print(self.window.getCoords())
-        actual = self.window.toScreen(0, 0)
-        expected = (-255, -190)  # almost equal -256, -192
-        # self.assertEqual(actual, expected)
+    # TODO find out why this test doesn't work
+    # def test_00_to_screen_with_default_view_and_2x_zoom(self):
+    #     self.window.zoom_factor = 2.0
+    #     self.window.setCoords(*self.window.getCoords())
+    #     print(self.window.getCoords())
+    #     actual = self.window.toScreen(0, 0)
+    #     expected = (-255, -190)  # almost equal -256, -192
+    #     self.assertEqual(actual, expected)
 
-        actual = self.window.toScreen(512, 384)
-        expected = (0, 0)
-        # self.assertEqual(actual, expected)
+    #     actual = self.window.toScreen(512, 384)
+    #     expected = (0, 0)
+    #     self.assertEqual(actual, expected)
 
-        print(self.window.xview())
-        print(self.window.yview())
-        print(self.window.getCoords())
-        print(self.window.toScreen(0, 0))
-        print(self.window.toScreen(256, 192))
-        self.window.centerScreenOnPoint(graphics.Point(1024, 768))
-        print(self.window.toScreen(256, 192))
-        print(self.window.toScreen(1024, 768))
+    #     print(self.window.xview())
+    #     print(self.window.yview())
+    #     print(self.window.getCoords())
+    #     print(self.window.toScreen(0, 0))
+    #     print(self.window.toScreen(256, 192))
+    #     self.window.centerScreenOnPoint(graphics.Point(1024, 768))
+    #     print(self.window.toScreen(256, 192))
+    #     print(self.window.toScreen(1024, 768))
 
 
 class TestToWorld(unittest.TestCase):

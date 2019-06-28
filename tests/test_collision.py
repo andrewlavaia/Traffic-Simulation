@@ -27,3 +27,30 @@ class TestGrid(unittest.TestCase):
         actual = self.grid.getCellNum(mid_x, mid_y)
         expected = (self.grid.num_cols * self.grid.num_rows/2) + self.grid.num_cols/2
         self.assertEqual(actual, expected)
+
+
+class TestGrid(unittest.TestCase):
+    def setUp(self):
+        self.quad = collision.QuadTree(-1024, 1024, -768, 768)
+        self.quad.insertIntoCell(10, 10, "A")
+        self.quad.insertIntoCell(15, 10, "B")
+        self.quad.insertIntoCell(20, 20, "C")
+        self.quad.insertIntoCell(-1, 10, "D")
+
+    def test_find_all_objects_in_same_cell(self):
+        actual = self.quad.getCellContents(5, 5)
+        expected = {"A", "B"}
+        self.assertEqual(actual, expected)
+
+        actual = self.quad.getCellContents(20, 20)
+        expected = {"C"}
+        self.assertEqual(actual, expected)
+
+        actual = self.quad.getCellContents(-1, 10)
+        expected = {"D"}
+        self.assertEqual(actual, expected)
+
+    def test_find_no_objects_in_empty_cell(self):
+        actual = self.quad.getCellContents(-500, -350)
+        expected = None
+        self.assertEqual(actual, expected)

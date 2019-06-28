@@ -9,7 +9,7 @@ from maps import RoadMap
 from cars import Car, CarShape, CarFactory
 from gps import GPS
 from info_window import InfoWindow
-from collision import CollisionSystem
+from collision import GridCollisionSystem, QuadTreeCollisionSystem
 from latlon import LatLonConverter
 from openstreetmap import query_roads_by_lat_lon, save_raw_json_map_data
 
@@ -40,14 +40,15 @@ def main():
     car_shapes = []
     car_factory = CarFactory(window, gps, cars, car_shapes)
 
-    num_cars = 50
+    num_cars = 100
     for i in range(num_cars):
         car_factory.create()
 
     for car_shape in car_shapes:
         car_shape.draw()
 
-    collision_system = CollisionSystem(window, cars)
+    # collision_system = GridCollisionSystem(window, cars)
+    collision_system = QuadTreeCollisionSystem(window, cars)
 
     info = InfoWindow(secondary_window)
     info.setSelectedCar(cars[0])
@@ -115,7 +116,7 @@ def main():
                 car_shape = car_shapes[car.index]
                 car_shape.x = cars[car.index].x
                 car_shape.y = cars[car.index].y
-            collision_system.updateCells(cars)
+            collision_system.updateObjects(cars)
 
             nextLogicTick += TIME_PER_TICK
             lag -= TIME_PER_TICK
