@@ -6,6 +6,9 @@ class Cell:
         self.id = id(self)
         self.contents = set()
 
+    def __eq__(self, other):
+        return self.id == other.id
+
     def addObj(self, obj_id):
         self.contents.add(obj_id)
 
@@ -48,7 +51,7 @@ class Grid:
 
 
 class QuadTree:
-    def __init__(self, x_min, x_max, y_min, y_max):
+    def __init__(self, x_min, x_max, y_min, y_max, parent=None):
         self.min_size = 32
         self.x_min = x_min
         self.x_max = x_max
@@ -61,6 +64,7 @@ class QuadTree:
 
         self.cell = Cell()
 
+        self.parent = parent
         self.top_left = None
         self.top_right = None
         self.bot_left = None
@@ -71,42 +75,46 @@ class QuadTree:
         return self.x_range < self.min_size and self.y_range < self.min_size
 
     def insertIntoCell(self, x, y, obj_id):
+        """Insert object into cell and return inserted cell"""
         if not self.withinBounds(x, y):
-            return
+            return None
 
         if self.smallest_possible_tree:
             self.cell.addObj(obj_id)
-            return
+            return self.cell
 
         # recursively sub-divide tree into quarters
         # top left
         if x < self.x_mid and y < self.y_mid:
             if not self.top_left:
-                self.top_left = QuadTree(self.x_min, self.x_mid, self.y_min, self.y_mid)
-            self.top_left.insertIntoCell(x, y, obj_id)
+                self.top_left = QuadTree(self.x_min, self.x_mid, self.y_min, self.y_mid, self)
+            return self.top_left.insertIntoCell(x, y, obj_id)
 
         # bottom left
         elif x < self.x_mid and y >= self.y_mid:
             if not self.bot_left:
-                self.bot_left = QuadTree(self.x_min, self.x_mid, self.y_mid, self.y_max)
-            self.bot_left.insertIntoCell(x, y, obj_id)
+                self.bot_left = QuadTree(self.x_min, self.x_mid, self.y_mid, self.y_max, self)
+            return self.bot_left.insertIntoCell(x, y, obj_id)
 
         # top right
         elif x >= self.x_mid and y < self.y_mid:
             if not self.top_right:
-                self.top_right = QuadTree(self.x_mid, self.x_max, self.y_min, self.y_mid)
-            self.top_right.insertIntoCell(x, y, obj_id)
+                self.top_right = QuadTree(self.x_mid, self.x_max, self.y_min, self.y_mid, self)
+            return self.top_right.insertIntoCell(x, y, obj_id)
 
         # bottom right
         else:
             if not self.bot_right:
-                self.bot_right = QuadTree(self.x_mid, self.x_max, self.y_mid, self.y_max)
-            self.bot_right.insertIntoCell(x, y, obj_id)
+                self.bot_right = QuadTree(self.x_mid, self.x_max, self.y_mid, self.y_max, self)
+            return self.bot_right.insertIntoCell(x, y, obj_id)
 
-    def removeFromCell(self, x, y, obj_id):
-        cell = self.findCell(x, y)
-        if cell and obj_id in cell.contents:
+    def removeFromCell(self, x, y, obj_id, cell=None):
+        if not cell:
+            cell = self.findCell(x, y)
+        if obj_id in cell.contents:
             cell.removeObj(obj_id)
+
+        # TODO -> if not cell.contents: add self to garbage collection
 
     def getCellContents(self, x, y):
         cell = self.findCell(x, y)
@@ -224,8 +232,8 @@ class QuadTreeCollisionSystem(CollisionSystem):
         self.quad = QuadTree(self.x_min, self.x_max, self.y_min, self.y_max)
 
         for car in cars:
-            car.cell_num = self.quad.findCell(car.x, car.y)
-            self.quad.insertIntoCell(car.x, car.y, car.index)
+            # TODO change car.cell_num to car.cell
+            car.cell_num = self.quad.insertIntoCell(car.x, car.y, car.index)
 
     def getNearbyObjects(self, car):
         nearby_objects = self.quad.getCellContents(car.x, car.y)
@@ -236,7 +244,6 @@ class QuadTreeCollisionSystem(CollisionSystem):
     def updateObjects(self, cars):
         for car in cars:
             cell = self.quad.findCell(car.x, car.y)
-            if cell and cell.id != car.cell_num:
-                self.quad.removeFromCell(car.x, car.y, car.index)
-                self.quad.insertIntoCell(car.x, car.y, car.index)
-                car.cell_num = cell.id
+            if cell and cell != car.cell_num:
+                self.quad.removeFromCell(car.x, car.y, car.index, car.cell_num)
+                car.cell_num = self.quad.insertIntoCell(car.x, car.y, car.index)
