@@ -126,11 +126,9 @@ class QuadTree:
                 self.bot_right = QuadTree(self.x_mid, self.x_max, self.y_mid, self.y_max, self)
             return self.bot_right.insertIntoCell(x, y, obj_id)
 
-    def removeFromCell(self, x, y, obj_id, cell=None):
-        if not cell:
-            cell = self.findCell(x, y)
-        if obj_id in cell.contents:
-            cell.removeObj(obj_id)
+    @staticmethod
+    def removeFromCell(cell, obj_id):
+        cell.removeObj(obj_id)
 
     def getCellContents(self, x, y):
         cell = self.findCell(x, y)
@@ -172,6 +170,16 @@ class QuadTree:
             x >= self.x_min and x <= self.x_max and
             y >= self.y_min and y <= self.y_max
         )
+
+    def removeTree(self, tree):
+        if self.top_left and self.top_left == tree:
+            self.top_left = None
+        elif self.top_right and self.top_right == tree:
+            self.top_right = None
+        elif self.bot_left and self.bot_left == tree:
+            self.bot_left = None
+        elif self.bot_right and self.bot_right == tree:
+            self.bot_right = None
 
 
 class CollisionSystem(metaclass=abc.ABCMeta):
@@ -247,6 +255,8 @@ class QuadTreeCollisionSystem(CollisionSystem):
         self.y_max = window.scrollregion_y/2.0
         self.quad = QuadTree(self.x_min, self.x_max, self.y_min, self.y_max)
         self.cell_to_tree_map = {}
+        self.empty_trees = set()
+        self.empty_trees_counter = 0
 
         for car in cars:
             tree = self.quad.insertIntoCell(car.x, car.y, car.index)
@@ -254,37 +264,32 @@ class QuadTreeCollisionSystem(CollisionSystem):
             self.cell_to_tree_map[car.cell.id] = tree
 
     def getNearbyObjects(self, car):
-        nearby_objects = self.quad.getCellContents(car.x, car.y)
-        if not nearby_objects:
-            return []
-        return nearby_objects
+        return car.cell.contents  # speedup/simplification to ignore cars in adjacent cells
 
-    def removeTrees(self, empty_trees):
-        for empty_tree in empty_trees:
+    def removeTrees(self):
+        """Consolidates subtrees"""
+        if self.empty_trees_counter % 100 != 0:  # no need to do this every frame
+            self.empty_trees_counter += 1
+            return
+
+        for empty_tree in self.empty_trees:
             parent_tree = empty_tree.parent
-            if parent_tree.top_left and parent_tree.top_left == empty_tree:
-                parent_tree.top_left = None
-            elif parent_tree.top_right and parent_tree.top_right == empty_tree:
-                parent_tree.top_right = None
-            elif parent_tree.bot_left and parent_tree.bot_left == empty_tree:
-                parent_tree.bot_left = None
-            elif parent_tree.bot_right and parent_tree.bot_right == empty_tree:
-                parent_tree.bot_right = None
+            parent_tree.removeTree(empty_tree)
 
     def updateObjects(self, cars):
-        empty_trees = set()
         for car in cars:
             cell = self.quad.findCell(car.x, car.y)
             if cell and cell != car.cell:
                 current_tree = self.cell_to_tree_map[car.cell.id]
-                current_tree.removeFromCell(car.x, car.y, car.index, car.cell)
+                current_tree.removeFromCell(car.cell, car.index)
                 if current_tree.is_empty:
                     self.cell_to_tree_map.pop(car.cell.id)
-                    empty_trees.add(current_tree)
+                    self.empty_trees.add(current_tree)
+
                 new_tree = self.quad.insertIntoCell(car.x, car.y, car.index)
                 car.cell = new_tree.cell
                 self.cell_to_tree_map[car.cell.id] = new_tree
-                if new_tree in empty_trees:
-                    empty_trees.remove(new_tree)
+                if new_tree in self.empty_trees:
+                    self.empty_trees.remove(new_tree)
 
-        self.removeTrees(empty_trees)
+        self.removeTrees()
