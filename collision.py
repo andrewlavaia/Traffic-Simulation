@@ -9,6 +9,10 @@ class Cell:
     def __eq__(self, other):
         return self.id == other.id
 
+    @property
+    def is_empty(self):
+        return not self.contents
+
     def addObj(self, obj_id):
         self.contents.add(obj_id)
 
@@ -70,18 +74,32 @@ class QuadTree:
         self.bot_left = None
         self.bot_right = None
 
+    def __eq__(self, other):
+        return self.cell.id == other.cell.id
+
+    def __hash__(self):
+        return hash(self.cell.id)
+
     @property
     def smallest_possible_tree(self):
         return self.x_range < self.min_size and self.y_range < self.min_size
 
+    @property
+    def is_empty(self):
+        return (
+            self.cell.is_empty and
+            self.top_left is None and self.top_right is None and
+            self.bot_left is None and self.bot_right is None
+        )
+
     def insertIntoCell(self, x, y, obj_id):
-        """Insert object into cell and return inserted cell"""
+        """Insert object into cell and return the QuadTree that did the insertion"""
         if not self.withinBounds(x, y):
             return None
 
         if self.smallest_possible_tree:
             self.cell.addObj(obj_id)
-            return self.cell
+            return self
 
         # recursively sub-divide tree into quarters
         # top left
@@ -113,8 +131,6 @@ class QuadTree:
             cell = self.findCell(x, y)
         if obj_id in cell.contents:
             cell.removeObj(obj_id)
-
-        # TODO -> if not cell.contents: add self to garbage collection
 
     def getCellContents(self, x, y):
         cell = self.findCell(x, y)
@@ -200,19 +216,19 @@ class GridCollisionSystem(CollisionSystem):
         )
 
         for car in cars:
-            car.cell_num = self.grid.getCellNum(car.x, car.y)
-            self.grid.insertIntoCell(car.cell_num, car.index)
+            car.cell = self.grid.getCellNum(car.x, car.y)
+            self.grid.insertIntoCell(car.cell, car.index)
 
     def getNearbyObjects(self, car):
-        return self.grid.getCellContents(car.cell_num)
+        return self.grid.getCellContents(car.cell)
 
     def updateObjects(self, cars):
         for car in cars:
             cell_num = self.grid.getCellNum(car.x, car.y)
-            if cell_num != car.cell_num:
+            if cell_num != car.cell:
                 self.grid.removeFromCell(cell_num, car.index)
                 self.grid.insertIntoCell(cell_num, car.index)
-                car.cell_num = cell_num
+                car.cell = cell_num
 
 
 class QuadTreeCollisionSystem(CollisionSystem):
@@ -230,10 +246,12 @@ class QuadTreeCollisionSystem(CollisionSystem):
         self.x_max = window.scrollregion_x/2.0
         self.y_max = window.scrollregion_y/2.0
         self.quad = QuadTree(self.x_min, self.x_max, self.y_min, self.y_max)
+        self.cell_to_tree_map = {}
 
         for car in cars:
-            # TODO change car.cell_num to car.cell
-            car.cell_num = self.quad.insertIntoCell(car.x, car.y, car.index)
+            tree = self.quad.insertIntoCell(car.x, car.y, car.index)
+            car.cell = tree.cell
+            self.cell_to_tree_map[car.cell.id] = tree
 
     def getNearbyObjects(self, car):
         nearby_objects = self.quad.getCellContents(car.x, car.y)
@@ -241,9 +259,32 @@ class QuadTreeCollisionSystem(CollisionSystem):
             return []
         return nearby_objects
 
+    def removeTrees(self, empty_trees):
+        for empty_tree in empty_trees:
+            parent_tree = empty_tree.parent
+            if parent_tree.top_left and parent_tree.top_left == empty_tree:
+                parent_tree.top_left = None
+            elif parent_tree.top_right and parent_tree.top_right == empty_tree:
+                parent_tree.top_right = None
+            elif parent_tree.bot_left and parent_tree.bot_left == empty_tree:
+                parent_tree.bot_left = None
+            elif parent_tree.bot_right and parent_tree.bot_right == empty_tree:
+                parent_tree.bot_right = None
+
     def updateObjects(self, cars):
+        empty_trees = set()
         for car in cars:
             cell = self.quad.findCell(car.x, car.y)
-            if cell and cell != car.cell_num:
-                self.quad.removeFromCell(car.x, car.y, car.index, car.cell_num)
-                car.cell_num = self.quad.insertIntoCell(car.x, car.y, car.index)
+            if cell and cell != car.cell:
+                current_tree = self.cell_to_tree_map[car.cell.id]
+                current_tree.removeFromCell(car.x, car.y, car.index, car.cell)
+                if current_tree.is_empty:
+                    self.cell_to_tree_map.pop(car.cell.id)
+                    empty_trees.add(current_tree)
+                new_tree = self.quad.insertIntoCell(car.x, car.y, car.index)
+                car.cell = new_tree.cell
+                self.cell_to_tree_map[car.cell.id] = new_tree
+                if new_tree in empty_trees:
+                    empty_trees.remove(new_tree)
+
+        self.removeTrees(empty_trees)

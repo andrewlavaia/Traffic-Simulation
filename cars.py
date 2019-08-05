@@ -19,7 +19,7 @@ class Car:
         self.source_id, self.dest_id, self.route = self.newRoute()
         self.next_dest_id = self.getNextDest()
         self.current_edge = self.gps.getEdge(self.source_id, self.next_dest_id)
-        self.cell_num = None
+        self.cell = None  # used in collision system
         # print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
         # car shape must be a polygon because rectangles are represented as two points
