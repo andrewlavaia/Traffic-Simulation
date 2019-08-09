@@ -21,8 +21,8 @@ def main():
     secondary_window.setBackground('white')
     secondary_window.clear()
 
-    # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
     S, W, N, E = "40.73489", "-73.99264", "40.74020", "-73.97923"  # NYC lower east side
+    # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
     # overpass_query = query_roads_by_lat_lon(S, W, N, E)
     # save_raw_json_map_data(overpass_query, "map_data.txt")
 
@@ -30,6 +30,7 @@ def main():
 
     graph = Graph()
     graph.loadOpenStreetMapData("map_data.txt", llc)
+    # graph.loadOpenStreetMapData("map_data2.txt", llc)
 
     road_map = RoadMap(graph, window)
     road_map.draw()
@@ -46,6 +47,8 @@ def main():
 
     for car_shape in car_shapes:
         car_shape.draw()
+
+    road_map.drawRoadNames()
 
     # collision_system = GridCollisionSystem(window, cars)
     collision_system = QuadTreeCollisionSystem(window, cars)
@@ -122,7 +125,6 @@ def main():
             lag -= TIME_PER_TICK
 
         # render updates to window
-        road_map.drawRoadNames()
         road_map.drawRoute(info.selected_car.route, info.show_route)
         for car_shape in car_shapes:
             car_shape.render()

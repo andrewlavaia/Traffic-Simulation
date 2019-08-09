@@ -7,8 +7,9 @@ class RoadMap:
     """graphical representation of a graph"""
     def __init__(self, graph, canvas):
         self.canvas = canvas
-        self.intersections = {}  # vertex_id: Intersection
-        self.roads = {}          # edge_id: Road
+        self.intersections = {}   # vertex_id: Intersection
+        self.roads = {}           # edge_id: Road
+        self.route = frozenset()  # store selected car's current route
 
         for vertex in graph.vertices.values():
             self.intersections[vertex.id] = Intersection(vertex)
@@ -48,20 +49,29 @@ class RoadMap:
         road_names = {}
         roads_within_view = self.getRoadsWithinView()
 
-        for road in self.roads.values():
-            if road in roads_within_view:
-                road_names[road.name] = road
+        for road in roads_within_view:
+            road_names[road.name] = road
             road.undrawText()
-
-        for road in road_names.values():
             road.drawText(self.canvas)
 
     def drawRoute(self, route, show_route):
-        for vertex_id, intersection in self.intersections.items():
-            if show_route and vertex_id in route:
-                intersection.shape.setFill("blue")
-            else:
-                intersection.shape.setFill("")
+        if not show_route:
+            self.clearRoute(self.route)
+            self.route = frozenset()
+            return
+
+        for vertex_id in route:
+            intersection = self.intersections[vertex_id]
+            intersection.shape.setFill("blue")
+
+        old_route = self.route - set(route)
+        self.clearRoute(old_route)
+        self.route = frozenset(route)
+
+    def clearRoute(self, route):
+        for vertex_id in route:
+            intersection = self.intersections[vertex_id]
+            intersection.shape.setFill("")
 
     def showInfo(self, map_object):
         print(map_object)
@@ -95,12 +105,11 @@ class Road:
         self.text = self.createText()
 
     def __eq__(self, other):
-        return self.id == other.id
+        # This is only used for quickly creating a set of roads by name
+        return self.name == other.name
 
     def __hash__(self):
-        p0_tuple = (self.p0.x, self.p0.y)
-        p1_tuple = (self.p1.x, self.p1.y)
-        return hash((p0_tuple, p1_tuple))
+        return hash(self.name)
 
     def __repr__(self):
         return "Road {0}: {1} ({2}, {3}) - ({4}, {5})".format(
@@ -166,13 +175,11 @@ class Road2W(Road):
             self.lines.append(self.createLine(w1, w0, self.width))
 
     def __eq__(self, other):
-        return ((self.p0 == other.p0 and self.p1 == other.p1) or
-                (self.p0 == other.p1 and other.p0 == self.p1))
+        # This is only used for quickly creating a set of roads by name
+        return self.name == other.name
 
     def __hash__(self):
-        p0_tuple = (self.p0.x, self.p0.y)
-        p1_tuple = (self.p1.x, self.p1.y)
-        return hash(frozenset([p0_tuple, p1_tuple]))
+        return hash(self.name)
 
     def draw(self, canvas):
         for line in self.lines:
