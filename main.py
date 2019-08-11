@@ -34,6 +34,7 @@ def main():
 
     road_map = RoadMap(graph, window)
     road_map.draw()
+    road_map.drawRoadNames()
 
     gps = GPS(graph, road_map)
 
@@ -48,13 +49,12 @@ def main():
     for car_shape in car_shapes:
         car_shape.draw()
 
-    road_map.drawRoadNames()
-
     # collision_system = GridCollisionSystem(window, cars)
     collision_system = QuadTreeCollisionSystem(window, cars)
 
     info = InfoWindow(secondary_window)
     info.setSelectedCar(cars[0])
+    info.initializeTable()
     car_shapes[info.selected_car.index].shape.setFill("yellow")
 
     # initialize simulation variables

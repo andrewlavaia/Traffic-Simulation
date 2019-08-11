@@ -139,19 +139,19 @@ class Table(UIBase):
             row.undraw()
         self.rows = []
 
+    def updateRows(self, new_rows):
+        for i, row in enumerate(self.rows):
+            if row != new_rows[i]:
+                self.rows[i].undraw()
+                self.rows[i] = new_rows[i]
+                y = self.point.y + (i * self.row_height)
+                self.rows[i].createLabels(self.point.x, y, self.col_width)
+                self.rows[i].draw()
+
     def draw(self):
-        offset = Point(0, 0)
-        for i in range(len(self.rows)):
-            row = self.rows[i]
-            offset.y = self.point.y + (i * self.row_height)
-            for j in range(len(row.values)):
-                offset.x = self.point.x + (j * self.col_width)
-                row_label = Text(offset, row.values[j])
-                row_label.setAlignment("right")
-                row.labels.append(row_label)
-            if i > 0:
-                offset.x = self.point.x + (len(row.values) * self.col_width) - 30
-                # row.button = Button(self.canvas, offset, 15, 15, '-')
+        for i, row in enumerate(self.rows):
+            y = self.point.y + (i * self.row_height)
+            row.createLabels(self.point.x, y, self.col_width)
             row.draw()
 
     def undraw(self):
@@ -165,6 +165,19 @@ class TableRow(UIBase):
         self.values = list(*args)
         self.labels = []
         self.button = None
+
+    def __eq__(self, other):
+        return tuple(self.values) == tuple(other.values)
+
+    def __repr__(self):
+        return str(self.values)
+
+    def createLabels(self, x, y, col_width, alignment="right"):
+        for i, value in enumerate(self.values):
+            x += i * col_width
+            label = Text(Point(x, y), value)
+            label.setAlignment(alignment)
+            self.labels.append(label)
 
     def draw(self):
         for label in self.labels:

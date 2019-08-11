@@ -1,4 +1,4 @@
-from ui import HeaderText, Table, Button
+from ui import HeaderText, Table, TableRow, Button
 from graphics import Point
 
 
@@ -36,10 +36,13 @@ class InfoWindow:
     def followCar(self):
         self.follow_car = not self.follow_car
 
+    def initializeTable(self):
+        for label, value in self.selected_car.getInfo().items():
+            self.table.addRow(label, value)
+
     def updateTable(self):
-        try:
-            self.table.deleteAllRows()
-            for label, value in self.selected_car.getInfo().items():
-                self.table.addRow(label, value)
-        except AttributeError:  # self.selected_car is None
-            pass
+        info = self.selected_car.getInfo()
+        rows = []
+        for key, value in info.items():
+            rows.append(TableRow(self.canvas, (key, value)))
+        self.table.updateRows(rows)

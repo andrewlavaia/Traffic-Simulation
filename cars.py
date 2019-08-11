@@ -114,18 +114,29 @@ class Car:
         self.x, self.y = self.gps.getCoordinates(self.source_id)
 
     def getInfo(self):
+        road_name = ""
+        speed_limit = ""
+        lanes = ""
+        one_way = ""
+
+        if self.current_edge:
+            road_name = self.current_edge.name
+            speed_limit = self.current_edge.speed_limit
+            lanes = self.current_edge.lanes
+            one_way = self.current_edge.is_one_way
+
         info = {
             "id": self.id,
             "x": "{0:.1f}".format(self.x),
             "y": "{0:.1f}".format(self.y),
             "source": self.source_id,
             "destination": self.dest_id,
-            "speed": self.speed,
+            "speed": "{0:.2f}".format(self.speed),
             " ": "",
-            "road name": self.current_edge.name,
-            "speed limit": self.current_edge.speed_limit,
-            "lanes": self.current_edge.lanes,
-            "one way": str(self.current_edge.is_one_way),
+            "road name": road_name,
+            "speed limit": speed_limit,
+            "lanes": lanes,
+            "one way": one_way,
         }
         return info
 
