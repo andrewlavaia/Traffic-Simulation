@@ -134,6 +134,9 @@ def main():
             pxy = Point(info.selected_car.x, info.selected_car.y)
             window.centerScreenOnPoint(pxy)
 
+        window.update()
+        secondary_window.update()
+
     window.close
 
 

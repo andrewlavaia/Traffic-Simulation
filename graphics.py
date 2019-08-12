@@ -178,12 +178,14 @@ class GraphWin(tk.Canvas):
         self.scrollable = scrollable
         self.scrollregion_x = self.width * 20
         self.scrollregion_y = self.height * 20
+        self.scrollregion_x_half = self.scrollregion_x / 2.0  # optimization
+        self.scrollregion_y_half = self.scrollregion_y / 2.0  # optimization
         self.configure(
             scrollregion=(
-                -self.scrollregion_x/2.0, 
-                -self.scrollregion_y/2.0, 
-                self.scrollregion_x/2.0, 
-                self.scrollregion_y/2.0
+                -self.scrollregion_x_half, 
+                -self.scrollregion_y_half, 
+                self.scrollregion_x_half, 
+                self.scrollregion_y_half
             )
         )
         self.grid(row=0, column=0, sticky="nsew")
@@ -283,8 +285,8 @@ class GraphWin(tk.Canvas):
         """Get the top left point of the current view fraction"""
         xview = self.xview()
         yview = self.yview()
-        x = ((xview[0] * self.scrollregion_x) - (self.scrollregion_x/2.0))
-        y = ((yview[0] * self.scrollregion_y) - (self.scrollregion_y/2.0))
+        x = ((xview[0] * self.scrollregion_x) - self.scrollregion_x_half)
+        y = ((yview[0] * self.scrollregion_y) - self.scrollregion_y_half)
         return x, y
 
     def getCenterViewPoint(self):
@@ -314,8 +316,8 @@ class GraphWin(tk.Canvas):
 
     def convertPointToViewFraction(self, x, y):
         """Converts x, y in world coordinates to view fraction"""
-        x_fraction = (x + (self.scrollregion_x/2.0))/self.scrollregion_x
-        y_fraction = (y + (self.scrollregion_y/2.0))/self.scrollregion_y
+        x_fraction = (x + self.scrollregion_x_half)/self.scrollregion_x
+        y_fraction = (y + self.scrollregion_y_half)/self.scrollregion_y
         return x_fraction, y_fraction
 
     def centerScreenOnPoint(self, point):
@@ -390,7 +392,7 @@ class GraphWin(tk.Canvas):
         not been clicked since last call"""
         # if self.isClosed():
         #     raise GraphicsError("checkMouse in closed window")
-        self.update()
+        # self.update()
         if self.mouseX != None and self.mouseY != None:
             x,y = self.toWorld(self.mouseX, self.mouseY)
             self.mouseX = None
@@ -415,7 +417,7 @@ class GraphWin(tk.Canvas):
         """Return last key pressed or None if no key pressed since last call"""
         # if self.isClosed():
         #     raise GraphicsError("checkKey in closed window")
-        self.update()
+        # self.update()
         key = self.lastKey
         self.lastKey = None
         return key
@@ -839,9 +841,9 @@ class Polygon(GraphicsObject):
         return list(map(Point.clone, self.points))
 
     def _move(self, dx, dy):
-        self.center.move(dx, dy)
+        self.center._move(dx, dy)
         for p in self.points:
-            p.move(dx,dy)
+            p._move(dx,dy)
    
     def _draw(self, canvas, options):
         points = []
