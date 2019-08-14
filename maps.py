@@ -128,7 +128,7 @@ class Road:
     def createText(self):
         midpoint = Point((self.p0.x + self.p1.x)/2.0, (self.p0.y + self.p1.y)/2.0)
         text_obj = Text(midpoint, self.name)
-        text_obj.setSize(8)
+        text_obj.setSize(7)
         text_obj.setRotation((math_utils.degrees_clockwise(self.dx, self.dy) % 180) - 90)
         return text_obj
 

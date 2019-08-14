@@ -2,7 +2,7 @@ import pdb
 import time
 import sys
 
-from graphics import GraphWin, GraphicsError, Text, Point
+from graphics import GraphWin, GraphicsError, Text, Point, _root
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
@@ -42,7 +42,7 @@ def main():
     car_shapes = []
     car_factory = CarFactory(window, gps, cars, car_shapes)
 
-    num_cars = 100
+    num_cars = 200
     for i in range(num_cars):
         car_factory.create()
 
@@ -60,7 +60,7 @@ def main():
     # initialize simulation variables
     simTime = 0.0
     limit = 10000
-    TICKS_PER_SECOND = 60
+    TICKS_PER_SECOND = 30
     TIME_PER_TICK = 1.0/TICKS_PER_SECOND
     nextLogicTick = TIME_PER_TICK
     lastFrameTime = time.time()
@@ -75,41 +75,40 @@ def main():
         simTime += elapsed
 
         # process events
-        try:
-            last_pressed_key = window.checkKey() or secondary_window.checkKey()
-            if last_pressed_key is not None:
-                if last_pressed_key == "space":
-                    pause()
-                    lastFrameTime = time.time()
-                elif last_pressed_key == "p":
-                    window.zoomIn()
-                elif last_pressed_key == "o":
-                    window.zoomOut()
-                elif last_pressed_key == "d":
-                    print(road_map.getRoadsWithinView())
+        window.update()
+        secondary_window.update()
+        last_pressed_key = window.checkKey() or secondary_window.checkKey()
+        if last_pressed_key is not None:
+            if last_pressed_key == "space":
+                pause()
+                lastFrameTime = time.time()
+            elif last_pressed_key == "p":
+                window.zoomIn()
+            elif last_pressed_key == "o":
+                window.zoomOut()
+            elif last_pressed_key == "d":
+                print(road_map.getRoadsWithinView())
 
-            last_clicked_pt = window.checkMouse()
-            if last_clicked_pt is not None:
-                for car_shape in car_shapes:
-                    if car_shape.clicked(last_clicked_pt):
-                        car_shapes[info.selected_car.index].shape.setFill("white")
-                        info.setSelectedCar(cars[car_shape.index])
-                        car_shapes[info.selected_car.index].shape.setFill("yellow")
-                        continue
-
-                for intersection in road_map.intersections.values():
-                    if intersection.clicked(last_clicked_pt):
-                        road_map.showInfo(intersection)
-                        continue
-
-            last_clicked_pt = secondary_window.checkMouse()
-            if last_clicked_pt is not None:
-                for button in info.buttons:
-                    button.clicked(last_clicked_pt)
+        last_clicked_pt = window.checkMouse()
+        if last_clicked_pt is not None:
+            for car_shape in car_shapes:
+                if car_shape.clicked(last_clicked_pt):
+                    car_shapes[info.selected_car.index].shape.setFill("white")
+                    info.setSelectedCar(cars[car_shape.index])
+                    car_shapes[info.selected_car.index].shape.setFill("yellow")
                     continue
 
-        except GraphicsError:
-            pass
+            for intersection in road_map.intersections.values():
+                if intersection.clicked(last_clicked_pt):
+                    road_map.showInfo(intersection)
+                    continue
+
+        last_clicked_pt = secondary_window.checkMouse()
+        if last_clicked_pt is not None:
+            secondary_window.update()
+            for button in info.buttons:
+                button.clicked(last_clicked_pt)
+                continue
 
         # update simulation logic
         while lag > TIME_PER_TICK:
@@ -125,17 +124,17 @@ def main():
             lag -= TIME_PER_TICK
 
         # render updates to window
-        road_map.drawRoute(info.selected_car.route, info.show_route)
         for car_shape in car_shapes:
             car_shape.render()
-        info.updateTable()
 
+        info.updateTable()
         if info.follow_car:
             pxy = Point(info.selected_car.x, info.selected_car.y)
             window.centerScreenOnPoint(pxy)
 
-        window.update()
-        secondary_window.update()
+        road_map.drawRoute(info.selected_car.route, info.show_route)
+
+        _root.update_idletasks()
 
     window.close
 
@@ -147,7 +146,8 @@ def pause():
     message.setSize(24)
     message.draw(window)
     while window.checkKey() != "space" and secondary_window.checkKey() != "space":
-        pass
+        window.update()
+        secondary_window.update()
     message.undraw()
 
 

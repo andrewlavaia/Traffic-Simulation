@@ -500,7 +500,7 @@ class GraphWin(tk.Canvas):
             item.undraw()
             item.draw(self)
         self.update()
-        
+
                       
 class Transform:
     """Internal class for 2-D coordinate transformations"""
