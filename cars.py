@@ -36,16 +36,33 @@ class Car:
     def __eq__(self, other):
         return self.id == other.id
 
+    @property
+    def next_xy(self):
+        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
+        return (nx, ny)
+
     def checkCollision(self, other):
-        """check whether this car is too close to another car"""
-        required_delta = 5
-        x_overlap = (abs(self.x - other.x) * 2) < (self.width + other.width) + required_delta
-        y_overlap = (abs(self.y - other.y) * 2) < (self.height + other.height) + required_delta
+        """Check whether this car is about to smash into another car"""
+
+        # Only check for forward collisions by checking movement vector
+        adjustment_factor = 20.0
+        nx, ny = self.next_xy
+        dx = nx - self.x
+        dy = ny - self.y
+        dist = math_utils.pythag(dx, dy) or 1.0
+        mv_x = (dx/dist) * adjustment_factor
+        mv_y = (dy/dist) * adjustment_factor
+
+        # width vs height is dependent on the car's orientation,
+        # simplify by always checking longest one
+        x_overlap = (abs(self.x + mv_x - other.x) * 2) < (self.height + other.height)
+        y_overlap = (abs(self.y + mv_y - other.y) * 2) < (self.height + other.height)
         collision_detected = x_overlap and y_overlap
         return collision_detected
 
     def throttleDown(self):
-        self.speed *= 0.9
+        min_speed = 3.0
+        self.speed = max(self.speed * 0.9, min_speed)
 
     def throttleUp(self):
         self.speed *= 1.1
@@ -54,7 +71,7 @@ class Car:
 
     def moveTowardsDest(self, dt):
         movement = (dt * self.speed)
-        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
+        nx, ny = self.next_xy
         dx = nx - self.x
         dy = ny - self.y
         dist = math_utils.pythag(dx, dy)

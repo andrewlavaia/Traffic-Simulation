@@ -192,20 +192,21 @@ class CollisionSystem(metaclass=abc.ABCMeta):
         pass
 
     def processCollisions(self, cars):
-        already_processed = set()
         for car in cars:
-            collision_detected = False
             nearby_cars = self.getNearbyObjects(car)
+            if not nearby_cars:
+                car.throttleUp()
+
+            collision_detected = False
             for car_index in nearby_cars:
                 other = cars[car_index]
-                if car == other or car.index in already_processed:
+                if car == other:
                     continue
 
                 if car.checkCollision(other):
                     collision_detected = True
+                    # other.throttleUp()
                     car.throttleDown()
-                    other.throttleUp()
-                    already_processed.update({car.index, other.index})
 
             if not collision_detected:
                 car.throttleUp()

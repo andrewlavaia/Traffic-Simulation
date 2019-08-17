@@ -42,7 +42,7 @@ def main():
     car_shapes = []
     car_factory = CarFactory(window, gps, cars, car_shapes)
 
-    num_cars = 200
+    num_cars = 100
     for i in range(num_cars):
         car_factory.create()
 
