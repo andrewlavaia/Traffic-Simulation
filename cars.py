@@ -164,10 +164,10 @@ class CarShape():
         # car shape must be a polygon because rectangles are represented as two points
         # which prevents proper rotations and translations
         center = Point(self.x, self.y)
-        p1 = Point(self.x - (self.width/2), self.y - (self.height/2))
-        p2 = Point(self.x + (self.width/2), self.y - (self.height/2))
-        p3 = Point(self.x + (self.width/2), self.y + (self.height/2))
-        p4 = Point(self.x - (self.width/2), self.y + (self.height/2))
+        p1 = (self.x - (self.width/2), self.y - (self.height/2))
+        p2 = (self.x + (self.width/2), self.y - (self.height/2))
+        p3 = (self.x + (self.width/2), self.y + (self.height/2))
+        p4 = (self.x - (self.width/2), self.y + (self.height/2))
         points = [p1, p2, p3, p4]
         self.shape = Polygon(center, points)
         self.shape.setFill(self.color)
@@ -190,8 +190,8 @@ class CarShape():
         self.direction = new_direction
 
     def clicked(self, p):
-        x_points = [point.x for point in self.shape.points]
-        y_points = [point.y for point in self.shape.points]
+        x_points = [point[0] for point in self.shape.points]
+        y_points = [point[1] for point in self.shape.points]
         xmin = min(x_points)
         xmax = max(x_points)
         ymin = min(y_points)

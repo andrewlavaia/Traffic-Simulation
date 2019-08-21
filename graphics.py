@@ -829,34 +829,30 @@ class Line(_BBox):
 
 class Polygon(GraphicsObject):
     
-    def __init__(self, center, *points):
+    def __init__(self, center, points):
         self.center = center
-        # if points passed as a list, extract it
-        if len(points) == 1 and type(points[0]) == type([]):
-            points = points[0]
-        self.points = list(map(Point.clone, points))
+        self.points = points
         GraphicsObject.__init__(self, ["outline", "width", "fill"])
 
     def __repr__(self):
         return "Polygon"+str(tuple(p for p in self.points))
         
-    def clone(self):
-        other = Polygon(*self.points)
-        other.config = self.config.copy()
-        return other
+    # def clone(self):
+    #     other = Polygon(*self.points)
+    #     other.config = self.config.copy()
+    #     return other
 
-    def getPoints(self):
-        return list(map(Point.clone, self.points))
+    # def getPoints(self):
+    #     return list(map(Point.clone, self.points))
 
     def _move(self, dx, dy):
         self.center._move(dx, dy)
-        for p in self.points:
-            p._move(dx,dy)
+        self.points = [(p[0] + dx, p[1] + dy) for p in self.points]
    
     def _draw(self, canvas, options):
         points = []
         for p in self.points:
-            x,y = canvas.toScreen(p.x,p.y)
+            x, y = canvas.toScreen(p[0], p[1])
             points.append(x)
             points.append(y)
         return canvas.create_polygon(*points, options) 
@@ -866,9 +862,8 @@ class Polygon(GraphicsObject):
         coords = []
         new_points = []
         for point in self.points:
-            old_point = (point.x, point.y)
-            new_point = math_utils.rotate_point(old_point, degrees, center_point)
-            new_points.append(Point(new_point[0], new_point[1]))
+            new_point = math_utils.rotate_point(point, degrees, center_point)
+            new_points.append(new_point)
 
             # need to convert to screen coordinates when rendering to screen
             screen_x, screen_y = self.canvas.toScreen(new_point[0], new_point[1])
