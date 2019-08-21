@@ -1,3 +1,5 @@
+import functools
+
 import random
 from graphs import ShortestPaths, Edge
 from graphics import Point
@@ -12,6 +14,7 @@ class GPS:
         vertex = self.graph.vertices[vertex_id]
         return (vertex.x, vertex.y)
 
+    @functools.lru_cache(maxsize=256)
     def getLaneAdjCoords(self, vertex_id, edge, lane_index):
         x, y = self.getCoordinates(vertex_id)
         if edge is None:

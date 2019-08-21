@@ -241,14 +241,6 @@ class GridCollisionSystem(CollisionSystem):
 
 
 class QuadTreeCollisionSystem(CollisionSystem):
-    # TODO
-    # Optimizations:
-    # - have insertIntoCell return the cell id
-    # - consolidate trees when removing objects to free memory
-    # - when removing objects, reverse traverse rather than two full finds
-    # - add reference to parent tree to each child tree for easier reverse
-    # - store all cells in a hashtable with quick look up by id?
-
     def __init__(self, window, cars):
         self.x_min = -window.scrollregion_x/2.0
         self.y_min = -window.scrollregion_y/2.0

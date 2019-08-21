@@ -1,3 +1,5 @@
+import functools
+
 from graphics import Point, Polygon
 import math_utils
 
@@ -36,17 +38,16 @@ class Car:
     def __eq__(self, other):
         return self.id == other.id
 
-    @property
-    def next_xy(self):
-        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
-        return (nx, ny)
+    def __hash__(self):
+        return hash(self.id)
 
+    # @functools.lru_cache(maxsize=4)
     def checkCollision(self, other):
         """Check whether this car is about to smash into another car"""
 
         # Only check for forward collisions by checking movement vector
         adjustment_factor = 20.0
-        nx, ny = self.next_xy
+        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
         dx = nx - self.x
         dy = ny - self.y
         dist = math_utils.pythag(dx, dy) or 1.0
@@ -71,7 +72,7 @@ class Car:
 
     def moveTowardsDest(self, dt):
         movement = (dt * self.speed)
-        nx, ny = self.next_xy
+        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
         dx = nx - self.x
         dy = ny - self.y
         dist = math_utils.pythag(dx, dy)

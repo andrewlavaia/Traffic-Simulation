@@ -101,6 +101,7 @@ __version__ = "5.0"
 import time, os, sys
 import math_utils
 
+
 try:  # import as appropriate for 2.x vs. 3.x
    import tkinter as tk
    from tkinter import Menu, Frame
@@ -196,6 +197,8 @@ class GraphWin(tk.Canvas):
         self.setCoords(0, self.height, self.width, 0)
         self.lastX = None
         self.lastY = None
+        self.last_xview = self.xview()  # optimization
+        self.last_yview = self.yview()  # optimization
 
         if autoflush: 
             _root.update()
@@ -283,8 +286,8 @@ class GraphWin(tk.Canvas):
 
     def getViewPoint(self):
         """Get the top left point of the current view fraction"""
-        xview = self.xview()
-        yview = self.yview()
+        xview = self.last_xview
+        yview = self.last_yview
         x = ((xview[0] * self.scrollregion_x) - self.scrollregion_x_half)
         y = ((yview[0] * self.scrollregion_y) - self.scrollregion_y_half)
         return x, y
@@ -322,6 +325,8 @@ class GraphWin(tk.Canvas):
 
     def centerScreenOnPoint(self, point):
         """Adjust view fraction so that the given point is in the center of the screen"""
+        self.last_xview = self.xview()
+        self.last_yview = self.yview()   
         sx, sy = self.toScreen(point.x, point.y)
         x = sx - self.width/2.0
         y = sy - self.height/2.0
@@ -330,6 +335,8 @@ class GraphWin(tk.Canvas):
         self.yview_moveto(y_fraction)
 
     def resetView(self):
+        self.last_xview = self.xview()
+        self.last_yview = self.yview()
         self.zoom_factor = 1.0
         self.setCoords(*self.getCoords())
         center = Point(self.width/2.0, self.height/2.0)
@@ -470,6 +477,8 @@ class GraphWin(tk.Canvas):
         x_fraction, y_fraction = self.convertPointToViewFraction(x0 - x_diff, y0 - y_diff)
         self.xview_moveto(x_fraction)
         self.yview_moveto(y_fraction)
+        self.last_xview = self.xview()
+        self.last_yview = self.yview()
         self.lastX = e.x
         self.lastY = e.y
 
