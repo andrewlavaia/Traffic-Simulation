@@ -99,8 +99,8 @@ class Road:
         self.lane_gap = 4  # size of gap between lines
 
         for i in range(lanes):
-            u0 = self.getLaneAdjustedPoint(self.p0, i)
-            u1 = self.getLaneAdjustedPoint(self.p1, i)
+            u0 = self.getLaneAdjustedPoint(self.p0.x, self.p0.y, i)
+            u1 = self.getLaneAdjustedPoint(self.p1.x, self.p1.y, i)
             self.lines.append(self.createLine(u0, u1, self.width))
         self.text = self.createText()
 
@@ -143,16 +143,16 @@ class Road:
     def undrawText(self):
         self.text.undraw()
 
-    def getLaneAdjustedPoint(self, p0, lane_num, reverse=False):
+    def getLaneAdjustedPoint(self, x, y, lane_num, reverse=False):
         if not reverse:
             new_point = Point(
-                p0.x - (self.way_gap * self.unit_y) - lane_num * (self.lane_gap * self.unit_y),
-                p0.y + (self.way_gap * self.unit_x) + lane_num * (self.lane_gap * self.unit_x)
+                x - (self.way_gap * self.unit_y) - lane_num * (self.lane_gap * self.unit_y),
+                y + (self.way_gap * self.unit_x) + lane_num * (self.lane_gap * self.unit_x)
             )
         else:
             new_point = Point(
-                p0.x + (self.way_gap * self.unit_y) + lane_num * (self.lane_gap * self.unit_y),
-                p0.y - (self.way_gap * self.unit_x) - lane_num * (self.lane_gap * self.unit_x)
+                x + (self.way_gap * self.unit_y) + lane_num * (self.lane_gap * self.unit_y),
+                y - (self.way_gap * self.unit_x) - lane_num * (self.lane_gap * self.unit_x)
             )
         return new_point
 
@@ -167,10 +167,10 @@ class Road2W(Road):
         self.lane_gap /= 2
 
         for i in range(0, self.lanes, 2):
-            u0 = self.getLaneAdjustedPoint(p0, i)
-            u1 = self.getLaneAdjustedPoint(p1, i)
-            w0 = self.getLaneAdjustedPoint(p0, i, reverse=True)
-            w1 = self.getLaneAdjustedPoint(p1, i, reverse=True)
+            u0 = self.getLaneAdjustedPoint(p0.x, p0.y, i)
+            u1 = self.getLaneAdjustedPoint(p1.x, p1.y, i)
+            w0 = self.getLaneAdjustedPoint(p0.x, p0.y, i, reverse=True)
+            w1 = self.getLaneAdjustedPoint(p1.x, p1.y, i, reverse=True)
             self.lines.append(self.createLine(u0, u1, self.width))
             self.lines.append(self.createLine(w1, w0, self.width))
 

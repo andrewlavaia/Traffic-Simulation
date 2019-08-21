@@ -323,14 +323,14 @@ class GraphWin(tk.Canvas):
         y_fraction = (y + self.scrollregion_y_half)/self.scrollregion_y
         return x_fraction, y_fraction
 
-    def centerScreenOnPoint(self, point):
+    def centerScreenOnPoint(self, x, y):
         """Adjust view fraction so that the given point is in the center of the screen"""
         self.last_xview = self.xview()
         self.last_yview = self.yview()   
-        sx, sy = self.toScreen(point.x, point.y)
-        x = sx - self.width/2.0
-        y = sy - self.height/2.0
-        x_fraction, y_fraction = self.convertPointToViewFraction(x, y)
+        sx, sy = self.toScreen(x, y)
+        x_adj = sx - self.width/2.0
+        y_adj = sy - self.height/2.0
+        x_fraction, y_fraction = self.convertPointToViewFraction(x_adj, y_adj)
         self.xview_moveto(x_fraction)
         self.yview_moveto(y_fraction)
 
@@ -339,8 +339,7 @@ class GraphWin(tk.Canvas):
         self.last_yview = self.yview()
         self.zoom_factor = 1.0
         self.setCoords(*self.getCoords())
-        center = Point(self.width/2.0, self.height/2.0)
-        self.centerScreenOnPoint(center)
+        self.centerScreenOnPoint(self.width/2.0, self.height/2.0)
 
     def close(self):
         """Close the window"""

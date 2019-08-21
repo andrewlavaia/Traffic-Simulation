@@ -24,17 +24,6 @@ class Car:
         self.cell = None  # used in collision system
         # print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
-        # car shape must be a polygon because rectangles are represented as two points
-        # which prevents proper rotations and translations
-        center = Point(self.x, self.y)
-        p1 = Point(self.x - (self.width/2), self.y - (self.height/2))
-        p2 = Point(self.x + (self.width/2), self.y - (self.height/2))
-        p3 = Point(self.x + (self.width/2), self.y + (self.height/2))
-        p4 = Point(self.x - (self.width/2), self.y + (self.height/2))
-        points = [p1, p2, p3, p4]
-        self.shape = Polygon(center, points)
-        self.shape.setFill("white")
-
     def __eq__(self, other):
         return self.id == other.id
 

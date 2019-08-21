@@ -2,7 +2,7 @@ import pdb
 import time
 import sys
 
-from graphics import GraphWin, GraphicsError, Text, Point, _root
+from graphics import GraphWin, Text, Point, _root
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
@@ -129,8 +129,7 @@ def main():
 
         info.updateTable()
         if info.follow_car:
-            pxy = Point(info.selected_car.x, info.selected_car.y)
-            window.centerScreenOnPoint(pxy)
+            window.centerScreenOnPoint(info.selected_car.x, info.selected_car.y)
 
         road_map.drawRoute(info.selected_car.route, info.show_route)
 

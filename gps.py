@@ -2,7 +2,6 @@ import functools
 
 import random
 from graphs import ShortestPaths, Edge
-from graphics import Point
 
 
 class GPS:
@@ -20,7 +19,7 @@ class GPS:
         if edge is None:
             return (x, y)
         road = self.road_map.roads[edge.id]
-        lane_adj_point = road.getLaneAdjustedPoint(Point(x, y), lane_index)
+        lane_adj_point = road.getLaneAdjustedPoint(x, y, lane_index)
         return (lane_adj_point.x, lane_adj_point.y)
 
     def getEdge(self, source_vertex_id, dest_vertex_id):
