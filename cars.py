@@ -186,7 +186,8 @@ class CarShape():
             return
         new_direction = math_utils.degrees_clockwise(dx, dy)
         degrees = float(self.direction - new_direction)
-        self.shape.rotate(degrees)
+        if abs(degrees) > 5:
+            self.shape.rotate(degrees)
         self.direction = new_direction
 
     def clicked(self, p):

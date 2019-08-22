@@ -99,6 +99,7 @@ __version__ = "5.0"
 #     Added Entry boxes.
 
 import time, os, sys
+import itertools
 import math_utils
 
 
@@ -859,21 +860,10 @@ class Polygon(GraphicsObject):
 
     def rotate(self, degrees):
         center_point = (self.center.x, self.center.y)
-        coords = []
-        new_points = []
-        for point in self.points:
-            new_point = math_utils.rotate_point(point, degrees, center_point)
-            new_points.append(new_point)
-
-            # need to convert to screen coordinates when rendering to screen
-            screen_x, screen_y = self.canvas.toScreen(new_point[0], new_point[1])
-            coords.extend([screen_x, screen_y])
-        
-        try:
-            self.canvas.coords(self.id, coords)
-        except tk.TclError:
-            sys.exit()
-        self.points = new_points
+        self.points = [math_utils.rotate_point(point, degrees, center_point) for point in self.points]
+        screen_point_tuples = [self.canvas.toScreen(point[0], point[1]) for point in self.points]
+        coords = list(itertools.chain.from_iterable(screen_point_tuples))
+        self.canvas.coords(self.id, coords)
 
 
 class Text(GraphicsObject):
