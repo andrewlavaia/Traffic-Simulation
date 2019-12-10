@@ -13,7 +13,7 @@ class RoadMap:
 
         for vertex in graph.vertices.values():
             self.intersections[vertex.id] = Intersection(vertex)
-            for edge in vertex.getEdges():
+            for edge in vertex.get_edges():
                 p0 = Point(graph.vertices[edge.source].x, graph.vertices[edge.source].y)
                 p1 = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)
 
@@ -22,7 +22,7 @@ class RoadMap:
                 else:
                     self.roads[edge.id] = Road2W(edge.id, p0, p1, edge.name, edge.lanes)
 
-    def getRoadsWithinView(self):
+    def get_roads_within_view(self):
         x0, y0, x1, y1 = self.canvas.getScreenPoints()
         roads_within_view = set()
         for road in self.roads.values():
@@ -38,25 +38,25 @@ class RoadMap:
         for road in self.roads.values():
             road.draw(self.canvas)
 
-        self.drawRoadNames()  # drawn last so road names are on top
+        self.draw_road_names()  # drawn last so road names are on top
 
-    def renderRoadNames(self):
+    def render_road_names(self):
         # don't redraw new road names every frame, just move the existing ones
         # until road is no longer in view?
         pass
 
-    def drawRoadNames(self):
+    def draw_road_names(self):
         road_names = {}
-        roads_within_view = self.getRoadsWithinView()
+        roads_within_view = self.get_roads_within_view()
 
         for road in roads_within_view:
             road_names[road.name] = road
-            road.undrawText()
-            road.drawText(self.canvas)
+            road.undraw_text()
+            road.draw_text(self.canvas)
 
-    def drawRoute(self, route, show_route):
+    def draw_route(self, route, show_route):
         if not show_route:
-            self.clearRoute(self.route)
+            self.clear_route(self.route)
             self.route = frozenset()
             return
 
@@ -65,15 +65,15 @@ class RoadMap:
             intersection.shape.setFill("blue")
 
         old_route = self.route - set(route)
-        self.clearRoute(old_route)
+        self.clear_route(old_route)
         self.route = frozenset(route)
 
-    def clearRoute(self, route):
+    def clear_route(self, route):
         for vertex_id in route:
             intersection = self.intersections[vertex_id]
             intersection.shape.setFill("")
 
-    def showInfo(self, map_object):
+    def show_info(self, map_object):
         print(map_object)
         # TODO implement an on-screen display or pop-up window for this
 
@@ -99,10 +99,10 @@ class Road:
         self.lane_gap = 4  # size of gap between lines
 
         for i in range(lanes):
-            u0 = self.getLaneAdjustedPoint(self.p0.x, self.p0.y, i)
-            u1 = self.getLaneAdjustedPoint(self.p1.x, self.p1.y, i)
-            self.lines.append(self.createLine(u0, u1, self.width))
-        self.text = self.createText()
+            u0 = self.get_lane_adjusted_point(self.p0.x, self.p0.y, i)
+            u1 = self.get_lane_adjusted_point(self.p1.x, self.p1.y, i)
+            self.lines.append(self.create_line(u0, u1, self.width))
+        self.text = self.create_text()
 
     def __eq__(self, other):
         # This is only used for quickly creating a set of roads by name
@@ -117,7 +117,7 @@ class Road:
         )
 
     @staticmethod
-    def createLine(p0, p1, width):
+    def create_line(p0, p1, width):
         line = Line(p0, p1)
         line.setWidth(width)
         color = color_rgb(200, 200, 200)
@@ -125,7 +125,7 @@ class Road:
         line.setArrow("last")
         return line
 
-    def createText(self):
+    def create_text(self):
         midpoint = Point((self.p0.x + self.p1.x)/2.0, (self.p0.y + self.p1.y)/2.0)
         text_obj = Text(midpoint, self.name)
         text_obj.setSize(7)
@@ -136,14 +136,14 @@ class Road:
         for line in self.lines:
             line.draw(canvas)
 
-    def drawText(self, canvas):
+    def draw_text(self, canvas):
         self.text.undraw()
         self.text.draw(canvas)
 
-    def undrawText(self):
+    def undraw_text(self):
         self.text.undraw()
 
-    def getLaneAdjustedPoint(self, x, y, lane_num, reverse=False):
+    def get_lane_adjusted_point(self, x, y, lane_num, reverse=False):
         if not reverse:
             new_point = Point(
                 x - (self.way_gap * self.unit_y) - lane_num * (self.lane_gap * self.unit_y),
@@ -167,12 +167,12 @@ class Road2W(Road):
         self.lane_gap /= 2
 
         for i in range(0, self.lanes, 2):
-            u0 = self.getLaneAdjustedPoint(p0.x, p0.y, i)
-            u1 = self.getLaneAdjustedPoint(p1.x, p1.y, i)
-            w0 = self.getLaneAdjustedPoint(p0.x, p0.y, i, reverse=True)
-            w1 = self.getLaneAdjustedPoint(p1.x, p1.y, i, reverse=True)
-            self.lines.append(self.createLine(u0, u1, self.width))
-            self.lines.append(self.createLine(w1, w0, self.width))
+            u0 = self.get_lane_adjusted_point(p0.x, p0.y, i)
+            u1 = self.get_lane_adjusted_point(p1.x, p1.y, i)
+            w0 = self.get_lane_adjusted_point(p0.x, p0.y, i, reverse=True)
+            w1 = self.get_lane_adjusted_point(p1.x, p1.y, i, reverse=True)
+            self.lines.append(self.create_line(u0, u1, self.width))
+            self.lines.append(self.create_line(w1, w0, self.width))
 
     def __eq__(self, other):
         # This is only used for quickly creating a set of roads by name

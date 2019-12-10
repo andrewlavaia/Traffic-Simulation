@@ -3,6 +3,7 @@ import math
 
 def pythag(side1, side2):
     """pythagorean theorem"""
+    math.sqrt((side1 * side1) + (side2 * side2))
     return math.sqrt((side1 * side1) + (side2 * side2))
 
 

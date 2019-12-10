@@ -11,16 +11,16 @@ class Car:
         self.gps = gps
         self.source_id = source_id
         self.dest_id = source_id
-        self.x, self.y = self.gps.getCoordinates(source_id)
+        self.x, self.y = self.gps.get_coordinates(source_id)
         self.speed = 20.0
         self.speed_limit = 30.0
         self.width = 5
         self.height = 15
         self.direction = 0
         self.lane_index = 0
-        self.source_id, self.dest_id, self.route = self.newRoute()
-        self.next_dest_id = self.getNextDest()
-        self.current_edge = self.gps.getEdge(self.source_id, self.next_dest_id)
+        self.source_id, self.dest_id, self.route = self.new_route()
+        self.next_dest_id = self.get_next_dest()
+        self.current_edge = self.gps.get_edge(self.source_id, self.next_dest_id)
         self.cell = None  # used in collision system
         # print("Car {0} moving from {1} to {2}".format(self.id, self.source_id, self.dest_id))
 
@@ -31,12 +31,12 @@ class Car:
         return hash(self.id)
 
     # @functools.lru_cache(maxsize=4)
-    def checkCollision(self, other):
+    def check_collision(self, other):
         """Check whether this car is about to smash into another car"""
 
         # Only check for forward collisions by checking movement vector
         adjustment_factor = 20.0
-        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
+        nx, ny = self.gps.get_lane_adj_coords(self.next_dest_id, self.current_edge, self.lane_index)
         dx = nx - self.x
         dy = ny - self.y
         dist = math_utils.pythag(dx, dy) or 1.0
@@ -50,27 +50,27 @@ class Car:
         collision_detected = x_overlap and y_overlap
         return collision_detected
 
-    def throttleDown(self):
+    def throttle_down(self):
         min_speed = 3.0
         self.speed = max(self.speed * 0.9, min_speed)
 
-    def throttleUp(self):
+    def throttle_up(self):
         self.speed *= 1.1
         if self.speed > self.speed_limit:
             self.speed = self.speed_limit
 
-    def moveTowardsDest(self, dt):
+    def move_towards_dest(self, dt):
         movement = (dt * self.speed)
-        nx, ny = self.gps.getLaneAdjCoords(self.next_dest_id, self.current_edge, self.lane_index)
+        nx, ny = self.gps.get_lane_adj_coords(self.next_dest_id, self.current_edge, self.lane_index)
         dx = nx - self.x
         dy = ny - self.y
         dist = math_utils.pythag(dx, dy)
 
         if dist <= movement:
             new_source = self.next_dest_id
-            self.next_dest_id = self.getNextDest()
-            self.current_edge = self.gps.getEdge(new_source, self.next_dest_id)
-            self.speed_limit = self.getSpeedLimit()
+            self.next_dest_id = self.get_next_dest()
+            self.current_edge = self.gps.get_edge(new_source, self.next_dest_id)
+            self.speed_limit = self.get_speed_limit()
             return
 
         mv_x = (dx/dist) * movement
@@ -79,48 +79,48 @@ class Car:
         self.x += mv_x
         self.y += mv_y
 
-    def chooseDest(self):
-        return self.gps.randomVertex()
+    def choose_dest(self):
+        return self.gps.random_vertex()
 
-    def newRoute(self):
+    def new_route(self):
         new_source_id = self.dest_id
-        new_dest_id = self.chooseDest()
-        new_route = self.gps.shortestRoute(new_source_id, new_dest_id)
+        new_dest_id = self.choose_dest()
+        new_route = self.gps.shortest_route(new_source_id, new_dest_id)
         new_route_count = 1
         while new_route is None and new_route_count < 10:
-            new_dest_id = self.chooseDest()
-            new_route = self.gps.shortestRoute(new_source_id, new_dest_id)
+            new_dest_id = self.choose_dest()
+            new_route = self.gps.shortest_route(new_source_id, new_dest_id)
             new_route_count += 1
 
         if new_route is None:
             # Car reached a dead end. Seriously, why do one way dead ends with no exit even exist?
             # TODO -> systematically remove these from the map data when a car hits one?
             # print("Car {0} reached a dead end at {1}".format(self.id, new_source_id))
-            self.resetCurrentLocation()
-            return self.newRoute()
+            self.reset_current_location()
+            return self.new_route()
 
         # print("Car {0} moving from {1} to {2}".format(self.id, new_source_id, new_dest_id))
         return new_source_id, new_dest_id, new_route
 
-    def getNextDest(self):
+    def get_next_dest(self):
         if not self.route:
-            self.source_id, self.dest_id, self.route = self.newRoute()
+            self.source_id, self.dest_id, self.route = self.new_route()
         dest_id = self.route.pop()
         return dest_id
 
-    def getSpeedLimit(self):
+    def get_speed_limit(self):
         if self.current_edge and self.current_edge.speed_limit is not None:
             return float(self.current_edge.speed_limit)
         else:
             return self.speed_limit
 
-    def resetCurrentLocation(self):
+    def reset_current_location(self):
         """instantly transports car to a new random location"""
-        self.source_id = self.gps.randomVertex()
+        self.source_id = self.gps.random_vertex()
         self.dest_id = self.source_id
-        self.x, self.y = self.gps.getCoordinates(self.source_id)
+        self.x, self.y = self.gps.get_coordinates(self.source_id)
 
-    def getInfo(self):
+    def get_info(self):
         road_name = ""
         speed_limit = ""
         lanes = ""
@@ -164,10 +164,10 @@ class CarShape():
         # car shape must be a polygon because rectangles are represented as two points
         # which prevents proper rotations and translations
         center = Point(self.x, self.y)
-        p1 = (self.x - (self.width/2), self.y - (self.height/2))
-        p2 = (self.x + (self.width/2), self.y - (self.height/2))
-        p3 = (self.x + (self.width/2), self.y + (self.height/2))
-        p4 = (self.x - (self.width/2), self.y + (self.height/2))
+        p1 = (self.x - (self.width / 2), self.y - (self.height / 2))
+        p2 = (self.x + (self.width / 2), self.y - (self.height / 2))
+        p3 = (self.x + (self.width / 2), self.y + (self.height / 2))
+        p4 = (self.x - (self.width / 2), self.y + (self.height / 2))
         points = [p1, p2, p3, p4]
         self.shape = Polygon(center, points)
         self.shape.setFill(self.color)
@@ -211,7 +211,7 @@ class CarFactory:
 
     def create(self):
         index = self.count
-        car = Car(index, self.gps, self.gps.randomVertex())
-        self.cars.append(Car(index, self.gps, self.gps.randomVertex()))
+        car = Car(index, self.gps, self.gps.random_vertex())
+        self.cars.append(Car(index, self.gps, self.gps.random_vertex()))
         self.car_shapes.append(CarShape(index, self.window, self.cars[index]))
         self.count += 1

@@ -1,4 +1,3 @@
-import pdb
 import time
 import sys
 
@@ -29,12 +28,12 @@ def main():
     llc = LatLonConverter(window, S, W, N, E)
 
     graph = Graph()
-    graph.loadOpenStreetMapData("map_data.txt", llc)
-    # graph.loadOpenStreetMapData("map_data2.txt", llc)
+    graph.load_open_street_map_data("map_data.txt", llc)
+    # graph.load_open_street_map_data("map_data2.txt", llc)
 
     road_map = RoadMap(graph, window)
     road_map.draw()
-    road_map.drawRoadNames()
+    road_map.draw_road_names()
 
     gps = GPS(graph, road_map)
 
@@ -53,8 +52,8 @@ def main():
     collision_system = QuadTreeCollisionSystem(window, cars)
 
     info = InfoWindow(secondary_window)
-    info.setSelectedCar(cars[0])
-    info.initializeTable()
+    info.set_selected_car(cars[0])
+    info.initialize_table()
     car_shapes[info.selected_car.index].shape.setFill("yellow")
 
     # initialize simulation variables
@@ -94,13 +93,13 @@ def main():
             for car_shape in car_shapes:
                 if car_shape.clicked(last_clicked_pt):
                     car_shapes[info.selected_car.index].shape.setFill("white")
-                    info.setSelectedCar(cars[car_shape.index])
+                    info.set_selected_car(cars[car_shape.index])
                     car_shapes[info.selected_car.index].shape.setFill("yellow")
                     continue
 
             for intersection in road_map.intersections.values():
                 if intersection.clicked(last_clicked_pt):
-                    road_map.showInfo(intersection)
+                    road_map.show_info(intersection)
                     continue
 
         last_clicked_pt = secondary_window.checkMouse()
@@ -112,13 +111,13 @@ def main():
 
         # update simulation logic
         while lag > TIME_PER_TICK:
-            collision_system.processCollisions(cars)
+            collision_system.process_collisions(cars)
             for car in cars:
-                car.moveTowardsDest(TIME_PER_TICK)
+                car.move_towards_dest(TIME_PER_TICK)
                 car_shape = car_shapes[car.index]
                 car_shape.x = cars[car.index].x
                 car_shape.y = cars[car.index].y
-            collision_system.updateObjects(cars)
+            collision_system.update_objects(cars)
 
             nextLogicTick += TIME_PER_TICK
             lag -= TIME_PER_TICK
@@ -131,7 +130,7 @@ def main():
         if info.follow_car:
             window.centerScreenOnPoint(info.selected_car.x, info.selected_car.y)
 
-        road_map.drawRoute(info.selected_car.route, info.show_route)
+        road_map.draw_route(info.selected_car.route, info.show_route)
 
         _root.update_idletasks()
 
@@ -167,14 +166,8 @@ if __name__ == '__main__':
     main()
 
 # TODO
-# Identify proper set of road tags that includes all main roads without too much noise
-# Add road names to map in an elegant manner
-# Add a follow car method so that a selected car stays in center of screen at all times
 # AI so cars can change lanes without crashing and adjust route based on existing traffic conditions
-    # fix movement of cars on two way roads
-    # add roads that can support more than 1 lane in each direction
     # add ability for cars to change lanes
 # create gui menu so that settings can be changed in the simulation (# of cars, lane closures, etc)
-# optimize until # of cars that can be drawn on the screen at once is: 50 | 100 | 200 | 500 | 1000
-    # create a way to limit # of collision checks that each car needs to do
+# increase # of cars that can be drawn on the screen at once to: 500 | 1000
 # dynamically load additional map data when zooming out or moving camera

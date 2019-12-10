@@ -41,7 +41,7 @@ class Button(UIBase):
                 self.ymin <= p.getY() <= self.ymax):
             return self.callback()
 
-    def getLabel(self):
+    def get_label(self):
         return self.label.getText()
 
     def activate(self):
@@ -76,20 +76,20 @@ class InputBox(UIBase):
         x_offset = 100 + ((char_max - 10)/2.0 * 9)  # diff b/t default char_max and font_size / 2
         self.entry = Entry(Point(point.x + x_offset, point.y), char_max)
         if default_val is not None:
-            self.setInput(default_val)
+            self.set_input(default_val)
         self.draw()
 
-    def getInput(self):
+    def get_input(self):
         return self.entry.getText()
 
-    def validateInput(self):
+    def validate_input(self):
         flag = True
         if self.type == 'unsigned_int':
-            flag = isinstance(int(self.getInput()), int) and int(self.getInput()) > 0
+            flag = isinstance(int(self.get_input()), int) and int(self.getInput()) > 0
         elif self.type == 'unsigned_float':
-            flag = isinstance(float(self.getInput()), float) and float(self.getInput()) > 0
+            flag = isinstance(float(self.get_input()), float) and float(self.getInput()) > 0
         elif self.type == 'float':
-            flag = isinstance(float(self.getInput()), float)
+            flag = isinstance(float(self.get_input()), float)
 
         if not flag:
             self.label.setTextColor('red')
@@ -97,9 +97,9 @@ class InputBox(UIBase):
             self.label.setTextColor('black')
         return flag
 
-    def setInput(self, val):
+    def set_input(self, val):
         self.entry.setText(val)
-        if self.validateInput() is not True:
+        if self.validate_input() is not True:
             self.entry.setText('')
 
     def draw(self):
@@ -110,7 +110,7 @@ class InputBox(UIBase):
         self.label.undraw()
         self.entry.undraw()
 
-    def getPointWithOffset(self):
+    def get_point_with_offset(self):
         return Point(self.point.x, self.point.y + 30)
 
 
@@ -122,36 +122,36 @@ class Table(UIBase):
         self.row_height = row_height
         self.col_width = col_width
 
-    def addRow(self, *args):
+    def add_row(self, *args):
         row = TableRow(self.canvas, args)
         self.rows.append(row)
         self.redraw()
 
-    def deleteRow(self, row_id):
+    def delete_row(self, row_id):
         for row in self.rows:
             if row.values[0] == row_id:
                 row.undraw()
                 self.rows.remove(row)
         self.redraw()
 
-    def deleteAllRows(self):
+    def delete_all_rows(self):
         for row in self.rows:
             row.undraw()
         self.rows = []
 
-    def updateRows(self, new_rows):
+    def update_rows(self, new_rows):
         for i, row in enumerate(self.rows):
             if row != new_rows[i]:
                 self.rows[i].undraw()
                 self.rows[i] = new_rows[i]
                 y = self.point.y + (i * self.row_height)
-                self.rows[i].createLabels(self.point.x, y, self.col_width)
+                self.rows[i].create_labels(self.point.x, y, self.col_width)
                 self.rows[i].draw()
 
     def draw(self):
         for i, row in enumerate(self.rows):
             y = self.point.y + (i * self.row_height)
-            row.createLabels(self.point.x, y, self.col_width)
+            row.create_labels(self.point.x, y, self.col_width)
             row.draw()
 
     def undraw(self):
@@ -172,7 +172,7 @@ class TableRow(UIBase):
     def __repr__(self):
         return str(self.values)
 
-    def createLabels(self, x, y, col_width, alignment="right"):
+    def create_labels(self, x, y, col_width, alignment="right"):
         for i, value in enumerate(self.values):
             x += i * col_width
             label = Text(Point(x, y), value)

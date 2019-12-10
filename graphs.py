@@ -21,8 +21,8 @@ class Graph:
             ret += str(vertex_id) + ": " + str(vertex.getEdges()) + "\n"
         return ret
 
-    def loadMap(self, filename):
-        data = file_utils.load_map(filename)
+    def load_map(self, filename):
+        data = file_utils.load_yaml(filename)
         for vertex_data in data["intersections"]:
             intersection_id, x, y = vertex_data
             self.vertices[intersection_id] = Vertex(intersection_id, x, y, None)
@@ -32,15 +32,15 @@ class Graph:
             edge = Edge(connection[0], connection[1], 1, None)
             self.addEdge(edge)
 
-    def loadOpenStreetMapData(self, filename, lat_lon_converter):
+    def load_open_street_map_data(self, filename, lat_lon_converter):
         api = overpy.Overpass()
         result = api.parse_json(file_utils.load_bytes(filename))
         nodes = {}
 
         for node in result.nodes:
             if self.vertices.get(node.id) is None:
-                global_x, global_y = lat_lon_converter.latLonToGlobalXY(node.lat, node.lon)
-                local_x, local_y = lat_lon_converter.globalXYToLocalXY(global_x, global_y)
+                global_x, global_y = lat_lon_converter.lat_lon_to_global_xy(node.lat, node.lon)
+                local_x, local_y = lat_lon_converter.global_xy_to_local_xy(global_x, global_y)
                 self.vertices[node.id] = Vertex(node.id, local_x, local_y, node.tags)
 
         for way in result.ways:
@@ -55,35 +55,35 @@ class Graph:
                     mid_node = node
                     continue
 
-                if self.canVerticesBeReduced(prev_node.id, mid_node.id, node.id):
+                if self.can_vertices_be_reduced(prev_node.id, mid_node.id, node.id):
                     mid_node = node
                     continue
 
-                self.addEdges(prev_node.id, mid_node.id, way.tags)
+                self.add_edges(prev_node.id, mid_node.id, way.tags)
                 prev_node = mid_node
                 mid_node = node
 
-            self.addEdges(prev_node.id, mid_node.id, way.tags)
+            self.add_edges(prev_node.id, mid_node.id, way.tags)
 
-        self.removeUnusedVertices()
+        self.remove_unused_vertices()
 
-    def addEdge(self, edge):
-        self.vertices[edge.source].addEdge(edge)
+    def add_edge(self, edge):
+        self.vertices[edge.source].add_edge(edge)
         self.edge_cnt += 1
 
-    def addEdges(self, v1, v2, tags):
+    def add_edges(self, v1, v2, tags):
         if v1 and v2 and v1 != v2:
-            distance = self.distanceBetweenVertices(v1, v2)
+            distance = self.distance_between_vertices(v1, v2)
             edge = Edge(v1, v2, distance, tags)
-            self.addEdge(edge)
+            self.add_edge(edge)
             if tags.get('oneway') != 'yes':
                 other_edge = Edge(v2, v1, distance, tags)
-                self.addEdge(other_edge)
+                self.add_edge(other_edge)
 
-    def adjEdges(self, v):
-        return self.vertices[v.id].getEdges()
+    def adj_edges(self, v):
+        return self.vertices[v.id].get_edges()
 
-    def distanceBetweenVertices(self, vertex_id_1, vertex_id_2):
+    def distance_between_vertices(self, vertex_id_1, vertex_id_2):
         v1 = self.vertices[vertex_id_1]
         v2 = self.vertices[vertex_id_2]
         dx = v2.x - v1.x
@@ -91,7 +91,7 @@ class Graph:
         dist = math_utils.pythag(dx, dy)
         return dist
 
-    def canVerticesBeReduced(self, vertex_id_1, vertex_id_2, vertex_id_3):
+    def can_vertices_be_reduced(self, vertex_id_1, vertex_id_2, vertex_id_3):
         """Check whether 3 vertices can be reduced to 2 vertices"""
         v2 = self.vertices[vertex_id_2]
         if v2.is_intersection:
@@ -114,7 +114,7 @@ class Graph:
 
         return False
 
-    def removeUnusedVertices(self):
+    def remove_unused_vertices(self):
         """Remove all vertices that aren't a source or dest for an edge"""
         vertices_with_all_edges = copy.deepcopy(self.vertices)
         for vertex_id, vertex in self.vertices.items():
@@ -165,10 +165,10 @@ class Vertex:
     def __repr__(self):
         return str(self.id) + ":" + str(self.edges)
 
-    def addEdge(self, edge):
+    def add_edge(self, edge):
         self.edges.append(edge)
 
-    def getEdges(self):
+    def get_edges(self):
         return self.edges
 
 
@@ -190,7 +190,7 @@ class ShortestPaths:
             self.relax_edges(graph, vertex)
 
     def relax_edges(self, graph, source_vertex):
-        for edge in graph.adjEdges(source_vertex):
+        for edge in graph.adj_edges(source_vertex):
             dest_vertex = graph.vertices[edge.dest]
 
             dest_length = self.path_lengths[dest_vertex.id]

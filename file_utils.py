@@ -2,7 +2,7 @@ import yaml
 import json
 
 
-def load_map(file_string):
+def load_yaml(file_string):
     with open(file_string) as f:
         data_map = yaml.safe_load(f)
     return data_map

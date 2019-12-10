@@ -10,7 +10,7 @@ class InfoWindow:
         self.show_route = False
         self.follow_car = False
         self.show_route_btn = Button(
-            self.showRoute,
+            self.flip_show_route,
             self.canvas,
             Point(self.canvas.width/2, 375),
             300,
@@ -18,7 +18,7 @@ class InfoWindow:
             'Show Route'
         )
         self.follow_btn = Button(
-            self.followCar,
+            self.flip_follow_car,
             self.canvas,
             Point(self.canvas.width/2, 450),
             300,
@@ -27,22 +27,22 @@ class InfoWindow:
         )
         self.buttons = [self.show_route_btn, self.follow_btn]
 
-    def setSelectedCar(self, car):
+    def set_selected_car(self, car):
         self.selected_car = car
 
-    def showRoute(self):
+    def flip_show_route(self):
         self.show_route = not self.show_route
 
-    def followCar(self):
+    def flip_follow_car(self):
         self.follow_car = not self.follow_car
 
-    def initializeTable(self):
-        for label, value in self.selected_car.getInfo().items():
-            self.table.addRow(label, value)
+    def initialize_table(self):
+        for label, value in self.selected_car.get_info().items():
+            self.table.add_row(label, value)
 
     def updateTable(self):
-        info = self.selected_car.getInfo()
+        info = self.selected_car.get_info()
         rows = []
         for key, value in info.items():
             rows.append(TableRow(self.canvas, (key, value)))
-        self.table.updateRows(rows)
+        self.table.update_rows(rows)

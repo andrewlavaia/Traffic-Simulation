@@ -1,11 +1,13 @@
+from file_utils import load_yaml
 from ui import *
 
 
 class MainMenu:
-    def __init__(self, window, callback):
+    def __init__(self, window, callback, config="config.yml"):
         self.window = window
         self.callback = callback
         self.buttons = []
+        self.config_data = load_yaml(config)
 
         simulation_btn = Button(
             self.callback, self.window, Point(500, 200), 200, 100, 'Run Simulation'
@@ -16,7 +18,7 @@ class MainMenu:
         self.buttons.append(simulation_btn)
         self.buttons.append(test_btn)
 
-    def drawMenu(self):
+    def draw_menu(self):
         self.window.clear()
         self.window.setBackground('white')
 
@@ -24,7 +26,7 @@ class MainMenu:
             button.draw()
 
     def run(self):
-        self.drawMenu()
+        self.draw_menu()
 
         while True:
             last_clicked_pt = self.window.getMouse()
