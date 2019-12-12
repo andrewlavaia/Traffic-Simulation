@@ -144,21 +144,58 @@ def update(rate=None):
 
 ############################################################################
 # Graphics classes start here
-        
-class GraphWin(tk.Canvas):
 
-    """A GraphWin is a toplevel window for displaying graphics."""
-
-    def __init__(self, title="Graphics Window",
-                 width=200, height=200, autoflush=True, scrollable=True):
-        assert type(title) == type(""), "Title must be a string"
+class GraphApp(tk.Frame):
+    """Used to store multiple Tk containers in a single application window"""
+    def __init__(self, title="Application"):
         master = tk.Toplevel(_root)
         master.protocol("WM_DELETE_WINDOW", self.close)
+        tk.Frame.__init__(self, master, bg="#000000")
+        self.master.resizable(width=0, height=0)
+        self.master.title = title
+        self.closed = False
+
+        master.lift()
+        _root.update()
+
+    def close(self):
+        """Close the window"""
+        if self.closed: 
+            return
+        self.closed = True
+        self.master.destroy()
+
+    def isClosed(self):
+        return self.closed
+
+    def isOpen(self):
+        return not self.closed
+        
+class GraphWin(tk.Canvas):
+    """A GraphWin is a toplevel window for displaying graphics."""
+
+    def __init__(
+        self,
+        title="Graphics Window",
+        width=200,
+        height=200,
+        autoflush=True, 
+        scrollable=True,
+        new_window=True,
+        master=None,
+        grid_options=None
+    ):
+        if new_window or not master:
+            assert type(title) == type(""), "Title must be a string"
+            master = tk.Toplevel(_root)
+            master.protocol("WM_DELETE_WINDOW", self.close)
         tk.Canvas.__init__(self, master, width=width, height=height,
                            highlightthickness=0, bd=0)
-        self.master.title(title)
-        self.pack()
-        master.resizable(0,0)
+        if new_window:
+            self.master.title(title)
+            self.pack()
+            master.resizable(0,0)
+
         self.foreground = "black"
         self.items = []
         self.mouseX = None
@@ -173,7 +210,8 @@ class GraphWin(tk.Canvas):
         self._mouseCallback = None
         self.trans = None
         self.closed = False
-        master.lift()
+        if new_window:
+            master.lift()
         self.lastKey = None
         
         # scrolling options
@@ -190,9 +228,14 @@ class GraphWin(tk.Canvas):
                 self.scrollregion_y_half
             )
         )
-        self.grid(row=0, column=0, sticky="nsew")
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+
+        if grid_options:
+            row, column, sticky = grid_options
+            self.grid(row=row, column=column, sticky=sticky)
+        else:
+            self.grid(row=0, column=0, sticky="nsew")
+            self.grid_rowconfigure(0, weight=1)
+            self.grid_columnconfigure(0, weight=1)
 
         self.zoom_factor = 1.0
         self.setCoords(0, self.height, self.width, 0)
@@ -203,6 +246,7 @@ class GraphWin(tk.Canvas):
 
         if autoflush: 
             _root.update()
+        _root.update()
 
     def __repr__(self):
         if self.isClosed():

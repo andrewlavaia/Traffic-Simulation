@@ -1,7 +1,7 @@
 import time
 import sys
 
-from graphics import GraphWin, Text, Point, _root
+from graphics import GraphApp, GraphWin, Text, Point, _root
 from menu import MainMenu
 from graphs import Graph, ShortestPaths
 from maps import RoadMap
@@ -20,7 +20,13 @@ def main():
     secondary_window.setBackground('white')
     secondary_window.clear()
 
-    S, W, N, E = "40.73489", "-73.99264", "40.74020", "-73.97923"  # NYC lower east side
+    config_data = main_menu.config_data or {}
+
+    S = config_data["coords_south"]
+    W = config_data["coords_west"]
+    N = config_data["coords_north"]
+    E = config_data["coords_east"]
+    # S, W, N, E = "40.73489", "-73.99264", "40.74020", "-73.97923"  # NYC lower east side
     # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
     # overpass_query = query_roads_by_lat_lon(S, W, N, E)
     # save_raw_json_map_data(overpass_query, "map_data.txt")
@@ -41,7 +47,7 @@ def main():
     car_shapes = []
     car_factory = CarFactory(window, gps, cars, car_shapes)
 
-    num_cars = 100
+    num_cars = config_data["num_cars"]
     for i in range(num_cars):
         car_factory.create()
 
@@ -76,6 +82,7 @@ def main():
         # process events
         window.update()
         secondary_window.update()
+        frame.update()
         last_pressed_key = window.checkKey() or secondary_window.checkKey()
         if last_pressed_key is not None:
             if last_pressed_key == "space":
@@ -134,7 +141,8 @@ def main():
 
         _root.update_idletasks()
 
-    window.close
+    window.close()
+    secondary_window.close()
 
 
 def pause():
@@ -152,16 +160,23 @@ def pause():
 def cleanup():
     """free resources and close window"""
     window.close()
+    secondary_window.close()
     sys.exit()
 
 
 if __name__ == '__main__':
-    window = GraphWin('Traffic Simulation', 1024, 768, autoflush=False)
+    frame = GraphApp("frame")
+    window = GraphWin(
+        'Traffic Simulation', 1024, 768, autoflush=False,
+        new_window=False, master=frame.master, grid_options=(0, 0, "nw")
+    )
     main_menu = MainMenu(window, main)
     menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
-    window.addMenu(menu_options)
 
-    secondary_window = GraphWin('Info Window', 512, 512, autoflush=False, scrollable=False)
+    secondary_window = GraphWin(
+        'Info Window', 512, 512, autoflush=False, scrollable=False,
+        new_window=False, master=frame.master, grid_options=(0, 1, "ne")
+    )
 
     main()
 
