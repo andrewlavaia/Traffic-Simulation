@@ -143,6 +143,7 @@ def main():
 
     window.close()
     secondary_window.close()
+    frame.close()
 
 
 def pause():
@@ -161,22 +162,23 @@ def cleanup():
     """free resources and close window"""
     window.close()
     secondary_window.close()
+    frame.close()
     sys.exit()
 
 
 if __name__ == '__main__':
-    frame = GraphApp("frame")
+    frame = GraphApp("Traffic Simulation")
     window = GraphWin(
-        'Traffic Simulation', 1024, 768, autoflush=False,
-        new_window=False, master=frame.master, grid_options=(0, 0, "nw")
+        "Map Window", 1024, 768, autoflush=False,
+        new_window=False, master=frame.master, pack_options=("left", "both", True)
     )
-    main_menu = MainMenu(window, main)
-    menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
-
     secondary_window = GraphWin(
-        'Info Window', 512, 512, autoflush=False, scrollable=False,
-        new_window=False, master=frame.master, grid_options=(0, 1, "ne")
+        "Info Window", 512, 512, autoflush=False, scrollable=False,
+        new_window=False, master=frame.master, place_options=(1, 0, "ne")
     )
+    main_menu = MainMenu(window, main, secondary_window=secondary_window)
+    menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
+    frame.addMenu(menu_options)
 
     main()
 

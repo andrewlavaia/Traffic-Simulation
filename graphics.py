@@ -152,7 +152,7 @@ class GraphApp(tk.Frame):
         master.protocol("WM_DELETE_WINDOW", self.close)
         tk.Frame.__init__(self, master, bg="#000000")
         self.master.resizable(width=0, height=0)
-        self.master.title = title
+        self.master.title(title)
         self.closed = False
 
         master.lift()
@@ -170,7 +170,14 @@ class GraphApp(tk.Frame):
 
     def isOpen(self):
         return not self.closed
-        
+
+    def addMenu(self, options):
+        menubar = Menu(self.master)
+        for key, val in options.items():
+            menubar.add_command(label=key, command=val)
+        self.master.config(menu=menubar)
+
+
 class GraphWin(tk.Canvas):
     """A GraphWin is a toplevel window for displaying graphics."""
 
@@ -183,12 +190,15 @@ class GraphWin(tk.Canvas):
         scrollable=True,
         new_window=True,
         master=None,
-        grid_options=None
+        pack_options=None,
+        grid_options=None,
+        place_options=None,
     ):
         if new_window or not master:
             assert type(title) == type(""), "Title must be a string"
             master = tk.Toplevel(_root)
             master.protocol("WM_DELETE_WINDOW", self.close)
+            master.title(title)
         tk.Canvas.__init__(self, master, width=width, height=height,
                            highlightthickness=0, bd=0)
         if new_window:
@@ -229,7 +239,13 @@ class GraphWin(tk.Canvas):
             )
         )
 
-        if grid_options:
+        if pack_options:
+            side, fill, expand = pack_options
+            self.pack(side=side, fill=fill, expand=expand)
+        elif place_options:
+            x, y, anchor = place_options
+            self.place(relx=x, rely=y, anchor=anchor)
+        elif grid_options:
             row, column, sticky = grid_options
             self.grid(row=row, column=column, sticky=sticky)
         else:
