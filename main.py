@@ -14,9 +14,11 @@ from openstreetmap import query_roads_by_lat_lon, save_raw_json_map_data
 
 
 def main():
+    window.addToParent()
     window.setBackground('white')
     window.clear()
     window.resetView()
+    secondary_window.addToParent()
     secondary_window.setBackground('white')
     secondary_window.clear()
 
@@ -51,9 +53,6 @@ def main():
     for i in range(num_cars):
         car_factory.create()
 
-    for car_shape in car_shapes:
-        car_shape.draw()
-
     # collision_system = GridCollisionSystem(window, cars)
     collision_system = QuadTreeCollisionSystem(window, cars)
 
@@ -61,6 +60,9 @@ def main():
     info.set_selected_car(cars[0])
     info.initialize_table()
     car_shapes[info.selected_car.index].shape.setFill("yellow")
+
+    for car_shape in car_shapes:
+        car_shape.draw()
 
     # initialize simulation variables
     simTime = 0.0
@@ -168,13 +170,15 @@ def cleanup():
 
 if __name__ == '__main__':
     frame = GraphApp("Traffic Simulation")
+    window_options = {"pack": {"side": "left", "fill": "both", "expand": True}}
     window = GraphWin(
-        "Map Window", 1024, 768, autoflush=False,
-        new_window=False, master=frame.master, pack_options=("left", "both", True)
+        "Map Window", 1280, 800, autoflush=False,
+        new_window=False, master=frame.master, master_options=window_options
     )
+    secondary_window_options = {"place": {"relx": 1, "rely": 0, "anchor": "ne"}}
     secondary_window = GraphWin(
-        "Info Window", 512, 512, autoflush=False, scrollable=False,
-        new_window=False, master=frame.master, place_options=(1, 0, "ne")
+        "Info Window", 300, 400, autoflush=False, scrollable=False,
+        new_window=False, master=frame.master, master_options=secondary_window_options
     )
     main_menu = MainMenu(window, main, secondary_window=secondary_window)
     menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}

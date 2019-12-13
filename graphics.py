@@ -190,9 +190,7 @@ class GraphWin(tk.Canvas):
         scrollable=True,
         new_window=True,
         master=None,
-        pack_options=None,
-        grid_options=None,
-        place_options=None,
+        master_options=None,
     ):
         if new_window or not master:
             assert type(title) == type(""), "Title must be a string"
@@ -239,19 +237,9 @@ class GraphWin(tk.Canvas):
             )
         )
 
-        if pack_options:
-            side, fill, expand = pack_options
-            self.pack(side=side, fill=fill, expand=expand)
-        elif place_options:
-            x, y, anchor = place_options
-            self.place(relx=x, rely=y, anchor=anchor)
-        elif grid_options:
-            row, column, sticky = grid_options
-            self.grid(row=row, column=column, sticky=sticky)
-        else:
-            self.grid(row=0, column=0, sticky="nsew")
-            self.grid_rowconfigure(0, weight=1)
-            self.grid_columnconfigure(0, weight=1)
+        if not new_window:
+            self.master_options = master_options
+            self.addToParent()
 
         self.zoom_factor = 1.0
         self.setCoords(0, self.height, self.width, 0)
@@ -311,6 +299,26 @@ class GraphWin(tk.Canvas):
         # frame.bind("<Button-3>", popup)
 
         self.master.config(menu=menubar)
+
+    def addToParent(self):
+        if "pack" in self.master_options:
+            self.pack(**self.master_options["pack"])
+        elif "place" in self.master_options:
+            self.place(**self.master_options["place"])
+        elif "grid" in self.master_options:
+            self.grid(**self.master_options["grid"])
+        else:
+            self.grid(row=0, column=0, sticky="nsew")
+            self.grid_rowconfigure(0, weight=1)
+            self.grid_columnconfigure(0, weight=1)
+
+    def forget(self):
+        if "pack" in self.master_options:
+            self.pack_forget()
+        elif "place" in self.master_options:
+            self.place_forget()
+        else:  
+            self.grid_forget()
 
     # clear all drawn items
     def clear(self):

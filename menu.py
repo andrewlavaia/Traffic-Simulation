@@ -3,8 +3,9 @@ from ui import *
 
 
 class MainMenu:
-    def __init__(self, window, callback, config="config.yml"):
+    def __init__(self, window, callback, config="config.yml", secondary_window=None):
         self.window = window
+        self.secondary_window = secondary_window
         self.callback = callback
         self.buttons = []
         self.config_data = load_yaml(config)
@@ -21,6 +22,9 @@ class MainMenu:
     def draw_menu(self):
         self.window.clear()
         self.window.setBackground('white')
+
+        if self.secondary_window:
+            self.secondary_window.forget()
 
         for button in self.buttons:
             button.draw()

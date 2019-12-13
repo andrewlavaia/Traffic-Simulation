@@ -18,7 +18,9 @@ class UIBase(metaclass=ABCMeta):
 
 
 class Button(UIBase):
-    def __init__(self, callback, canvas, center, width, height, label):
+    def __init__(
+        self, callback, canvas, center, width=100, height=100, label="Button", font_size=14
+    ):
         """Creates a button that fires a callback when clicked"""
         self.callback = callback
         self.canvas = canvas
@@ -31,6 +33,7 @@ class Button(UIBase):
         self.rect = Rectangle(p1, p2)
         self.rect.setFill('lightgray')
         self.label = Text(center, label)
+        self.label.setSize(font_size)
         self.draw()
         self.activate()
 
@@ -115,12 +118,13 @@ class InputBox(UIBase):
 
 
 class Table(UIBase):
-    def __init__(self, canvas, point, row_height=30, col_width=120):
+    def __init__(self, canvas, point, row_height=30, col_width=120, font_size=12):
         self.canvas = canvas
         self.point = point
         self.rows = []
         self.row_height = row_height
         self.col_width = col_width
+        self.font_size = font_size
 
     def add_row(self, *args):
         row = TableRow(self.canvas, args)
@@ -145,13 +149,15 @@ class Table(UIBase):
                 self.rows[i].undraw()
                 self.rows[i] = new_rows[i]
                 y = self.point.y + (i * self.row_height)
-                self.rows[i].create_labels(self.point.x, y, self.col_width)
+                self.rows[i].create_labels(
+                    self.point.x, y, self.col_width, font_size=self.font_size
+                )
                 self.rows[i].draw()
 
     def draw(self):
         for i, row in enumerate(self.rows):
             y = self.point.y + (i * self.row_height)
-            row.create_labels(self.point.x, y, self.col_width)
+            row.create_labels(self.point.x, y, self.col_width, font_size=self.font_size)
             row.draw()
 
     def undraw(self):
@@ -172,10 +178,12 @@ class TableRow(UIBase):
     def __repr__(self):
         return str(self.values)
 
-    def create_labels(self, x, y, col_width, alignment="right"):
+    def create_labels(self, x, y, col_width, alignment="right", font_size=10):
+        labels = []
         for i, value in enumerate(self.values):
             x += i * col_width
             label = Text(Point(x, y), value)
+            label.setSize(font_size)
             label.setAlignment(alignment)
             self.labels.append(label)
 
