@@ -7,9 +7,9 @@ class RoadMap:
     """graphical representation of a graph"""
     def __init__(self, graph, canvas):
         self.canvas = canvas
-        self.intersections = {}   # vertex_id: Intersection
-        self.roads = {}           # edge_id: Road
-        self.route = frozenset()  # store selected car's current route
+        self.intersections = {}  # vertex_id: Intersection
+        self.roads = {}  # edge_id: Road
+        self.route = {}  # vertex_id: Line (used for drawing route)
 
         for vertex in graph.vertices.values():
             self.intersections[vertex.id] = Intersection(vertex)
@@ -54,24 +54,37 @@ class RoadMap:
             road.undraw_text()
             road.draw_text(self.canvas)
 
-    def draw_route(self, route, show_route):
+    def draw_route(self, car, show_route):
+        # TODO optimize to not have to redraw entire route each time
+        self.clear_route(self.route)
+        self.route = {}
+
         if not show_route:
-            self.clear_route(self.route)
-            self.route = frozenset()
             return
 
-        for vertex_id in route:
+        line_width = 3
+        line_color = color_rgb(20, 200, 20)
+        p0 = Point(car.x, car.y)
+        route = car.route
+        for vertex_id in route[::-1]:
             intersection = self.intersections[vertex_id]
-            intersection.shape.setFill("blue")
+            p1 = Point(intersection.x, intersection.y)
+            line = Line(p0, p1)
+            line.setWidth(line_width)
+            line.setOutline(line_color)
+            self.route[vertex_id] = line
+            p0 = p1
 
-        old_route = self.route - set(route)
+        old_route = {key: val for key, val in self.route.items() if key not in route}
+        self.route = {key: val for key, val in self.route.items() if key in route}
         self.clear_route(old_route)
-        self.route = frozenset(route)
+
+        for line in self.route.values():
+            line.draw(self.canvas)
 
     def clear_route(self, route):
-        for vertex_id in route:
-            intersection = self.intersections[vertex_id]
-            intersection.shape.setFill("")
+        for line in route.values():
+            line.undraw()
 
     def show_info(self, map_object):
         print(map_object)

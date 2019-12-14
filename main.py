@@ -139,7 +139,7 @@ def main():
         if info.follow_car:
             window.centerScreenOnPoint(info.selected_car.x, info.selected_car.y)
 
-        road_map.draw_route(info.selected_car.route, info.show_route)
+        road_map.draw_route(info.selected_car, info.show_route)
 
         _root.update_idletasks()
 

@@ -22,6 +22,7 @@ class MainMenu:
     def draw_menu(self):
         self.window.clear()
         self.window.setBackground('white')
+        self.window.resetView()
 
         if self.secondary_window:
             self.secondary_window.forget()
