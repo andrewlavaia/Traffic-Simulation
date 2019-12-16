@@ -82,17 +82,18 @@ class InputBox(UIBase):
             self.set_input(default_val)
         self.draw()
 
-    def get_input(self):
+    @property
+    def input_text(self):
         return self.entry.getText()
 
     def validate_input(self):
         flag = True
         if self.type == 'unsigned_int':
-            flag = isinstance(int(self.get_input()), int) and int(self.getInput()) > 0
+            flag = isinstance(int(self.input_text), int) and int(self.input_text) > 0
         elif self.type == 'unsigned_float':
-            flag = isinstance(float(self.get_input()), float) and float(self.getInput()) > 0
+            flag = isinstance(float(self.input_text), float) and float(self.input_text) > 0
         elif self.type == 'float':
-            flag = isinstance(float(self.get_input()), float)
+            flag = isinstance(float(self.input_text), float)
 
         if not flag:
             self.label.setTextColor('red')
@@ -202,11 +203,11 @@ class TableRow(UIBase):
 
 
 class HeaderText(UIBase):
-    def __init__(self, canvas, point, text, font_size=24):
+    def __init__(self, canvas, point, text, font_size=24, style="normal"):
         self.canvas = canvas
         self.text = Text(point, text)
         self.text.setSize(font_size)
-        self.text.setStyle('bold')
+        self.text.setStyle(style)
         self.text.setAlignment('left')
         self.draw()
 

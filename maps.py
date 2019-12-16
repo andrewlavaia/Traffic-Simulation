@@ -65,7 +65,8 @@ class RoadMap:
         line_width = 3
         line_color = color_rgb(20, 200, 20)
         p0 = Point(car.x, car.y)
-        route = car.route
+        route = car.route[:]
+        route.append(car.next_dest_id)
         for vertex_id in route[::-1]:
             intersection = self.intersections[vertex_id]
             p1 = Point(intersection.x, intersection.y)
