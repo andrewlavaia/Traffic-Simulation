@@ -48,7 +48,7 @@ class Grid:
             return
         self.cells[cell_num].add_obj(obj_id)
 
-    def removeFromCell(self, cell_num, obj_id):
+    def remove_from_cell(self, cell_num, obj_id):
         if cell_num == -1:
             return
         self.cells[cell_num].remove_obj(obj_id)

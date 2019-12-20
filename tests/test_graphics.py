@@ -200,10 +200,14 @@ class TestcenterScreenOnPoint(unittest.TestCase):
         self.window = graphics.GraphWin('Test', 1024, 768)
         self.window.xview_moveto(0.5)
         self.window.yview_moveto(0.5)
+        self.window.last_xview = self.window.xview()
+        self.window.last_yview = self.window.yview()
         self.window.zoom_factor = 1.0
 
     def test_center_view_on_center_point(self):
-        self.window.centerScreenOnPoint(graphics.Point(512, 384))
+        self.window.centerScreenOnPoint(512, 384)
+        self.window.last_xview = self.window.xview()
+        self.window.last_yview = self.window.yview()
         actual = tuple(self.window.getViewPoint())
         expected = (0, 0)
         self.assertEqual(actual, expected)
@@ -216,27 +220,35 @@ class TestcenterScreenOnPoint(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_center_view_on_00(self):
-        self.window.centerScreenOnPoint(graphics.Point(0, 0))
+        self.window.centerScreenOnPoint(0, 0)
+        self.window.last_xview = self.window.xview()
+        self.window.last_yview = self.window.yview()
         actual = tuple(self.window.getViewPoint())
         expected = (-512, -384)
         self.assertEqual(actual, expected)
 
     def test_center_view_on_00_after_2x_zoom(self):
         self.window.zoom_factor = 2.0
-        self.window.centerScreenOnPoint(graphics.Point(0, 0))
+        self.window.centerScreenOnPoint(0, 0)
+        self.window.last_xview = self.window.xview()
+        self.window.last_yview = self.window.yview()
         actual = tuple(self.window.getCenterViewPoint())
         expected = (0, 0)
         self.assertEqual(actual, expected)
 
     def test_center_view_on_00_before_2x_zoom(self):
-        self.window.centerScreenOnPoint(graphics.Point(0, 0))
+        self.window.centerScreenOnPoint(0, 0)
         self.window.zoom_factor = 2.0
+        self.window.last_xview = self.window.xview()
+        self.window.last_yview = self.window.yview()
         actual = tuple(self.window.getCenterViewPoint())
         expected = (0, 0)
         self.assertEqual(actual, expected)
 
     def test_center_view_on_offset_before_2x_zoom(self):
-        self.window.centerScreenOnPoint(graphics.Point(1024, 768))
+        self.window.centerScreenOnPoint(1024, 768)
+        self.window.last_xview = self.window.xview()
+        self.window.last_yview = self.window.yview()
         actual = tuple(self.window.getCenterViewPoint())
         expected = (1024, 768)
         self.assertEqual(actual, expected)
@@ -248,7 +260,9 @@ class TestcenterScreenOnPoint(unittest.TestCase):
 
     def test_center_view_on_offset_after_2x_zoom(self):
         self.window.zoom_factor = 2.0
-        self.window.centerScreenOnPoint(graphics.Point(1024, 768))
+        self.window.centerScreenOnPoint(1024, 768)
+        self.window.last_xview = self.window.xview()
+        self.window.last_yview = self.window.yview()
         actual = tuple(self.window.getCenterViewPoint())
         expected = (1024, 768)
         self.assertEqual(actual, expected)
