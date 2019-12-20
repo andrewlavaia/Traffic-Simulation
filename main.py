@@ -22,12 +22,13 @@ def main():
     secondary_window.setBackground('white')
     secondary_window.clear()
 
-    config_data = main_menu.config_data or {}
+    config_data = main_menu.config_data
+    map_data = config_data["map_data"]
 
-    S = config_data["coords_south"]
-    W = config_data["coords_west"]
-    N = config_data["coords_north"]
-    E = config_data["coords_east"]
+    S = map_data["coords_south"]
+    W = map_data["coords_west"]
+    N = map_data["coords_north"]
+    E = map_data["coords_east"]
     # S, W, N, E = "40.73489", "-73.99264", "40.74020", "-73.97923"  # NYC lower east side
     # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
     # overpass_query = query_roads_by_lat_lon(S, W, N, E)
@@ -36,7 +37,7 @@ def main():
     llc = LatLonConverter(window, S, W, N, E)
 
     graph = Graph()
-    graph.load_open_street_map_data("map_data.txt", llc)
+    graph.load_open_street_map_data(map_data["filename"], llc)
     # graph.load_open_street_map_data("map_data2.txt", llc)
 
     road_map = RoadMap(graph, window)

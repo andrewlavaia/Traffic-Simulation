@@ -1,0 +1,7 @@
+num_cars: 100
+map_data:
+  filename: "map_data/map_data_default.txt"
+  coords_south: "40.73489"
+  coords_west: "-73.99264"
+  coords_north: "40.74020"
+  coords_east: "-73.97923"

@@ -3,6 +3,11 @@ import json
 import yaml
 
 
+def save_yaml(filename, data):
+    with open(filename, 'w') as outfile:
+        yaml.safe_dump(data, outfile, default_flow_style=False)
+
+
 def load_yaml(filename):
     with open(filename) as f:
         data_map = yaml.safe_load(f)
