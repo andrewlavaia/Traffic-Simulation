@@ -87,10 +87,6 @@ class RoadMap:
         for line in route.values():
             line.undraw()
 
-    def show_info(self, map_object):
-        print(map_object)
-        # TODO implement an on-screen display or pop-up window for this
-
 
 class Road:
     """graphical representation of a single edge - one way road"""
@@ -221,3 +217,12 @@ class Intersection:
         ymin = self.y - self.radius
         ymax = self.y + self.radius
         return (xmin <= p.getX() <= xmax and ymin <= p.getY() <= ymax)
+
+    def get_info(self):
+        info = {
+            "type": "Intersection",
+            "id": self.id,
+            "x": "{0:.1f}".format(self.x),
+            "y": "{0:.1f}".format(self.y),
+        }
+        return info

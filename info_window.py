@@ -42,8 +42,35 @@ class InfoWindow:
         for label, value in self.selected_car.get_info().items():
             self.table.add_row(label, value)
 
-    def updateTable(self):
+    def update_table(self):
         info = self.selected_car.get_info()
+        rows = []
+        for key, value in info.items():
+            rows.append(TableRow(self.canvas, (key, value)))
+        self.table.update_rows(rows)
+
+
+class RoadInfoWindow:
+    def __init__(self, canvas):
+        self.canvas = canvas
+        self.table = Table(self.canvas, Point(30, 10), col_width=100, font_size=10)
+        self.selected_item = None
+
+    def set_selected_item(self, map_object):
+        self.selected_item = map_object
+
+    def update_table(self):
+        if self.selected_item is None:
+            self.table.delete_all_rows()
+            return
+
+        info = self.selected_item.get_info()
+
+        if info and not self.table.rows:
+            for label, value in info.items():
+                self.table.add_row(label, value)
+            return
+
         rows = []
         for key, value in info.items():
             rows.append(TableRow(self.canvas, (key, value)))

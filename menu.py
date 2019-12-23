@@ -11,11 +11,11 @@ MAP_DATA_DIR = "map_data"
 
 
 class MainMenu:
-    def __init__(self, window, callback, config="config_default.yml", secondary_window=None):
+    def __init__(self, window, callback, config="config_default.yml", hidden_windows=None):
         self.window = window
         self.callback = callback
         self.config_data = load_yaml(config)
-        self.secondary_window = secondary_window
+        self.hidden_windows = hidden_windows or []
 
         self.buttons = []
         self.inputs = []
@@ -87,8 +87,8 @@ class MainMenu:
         self.window.setBackground('white')
         self.window.resetView()
 
-        if self.secondary_window:
-            self.secondary_window.forget()
+        for hidden_window in self.hidden_windows:
+            hidden_window.forget()
 
         elements = self.buttons + self.inputs + self.labels
         for element in elements:
@@ -132,8 +132,8 @@ class MainMenu:
         if zip_code not in zip_code_data:
             return
 
-        lat_spread = 0.005
-        long_spread = 0.010
+        lat_spread = 0.00750
+        long_spread = 0.0150
         longitude = float(zip_code_data[zip_code]["INTPTLONG"])
         latitude = float(zip_code_data[zip_code]["INTPTLAT"])
         north = latitude + lat_spread

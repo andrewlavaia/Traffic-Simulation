@@ -239,7 +239,7 @@ class GraphWin(tk.Canvas):
 
         if not new_window:
             self.master_options = master_options
-            self.addToParent()
+            # self.addToParent()
 
         self.zoom_factor = 1.0
         self.setCoords(0, self.height, self.width, 0)
@@ -300,7 +300,9 @@ class GraphWin(tk.Canvas):
 
         self.master.config(menu=menubar)
 
-    def addToParent(self):
+    def addToParent(self, options=None):
+        if options is not None:
+            self.master_options = options
         if "pack" in self.master_options:
             self.pack(**self.master_options["pack"])
         elif "place" in self.master_options:

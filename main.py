@@ -7,7 +7,7 @@ from graphs import Graph, ShortestPaths
 from maps import RoadMap
 from cars import Car, CarShape, CarFactory
 from gps import GPS
-from info_window import InfoWindow
+from info_window import InfoWindow, RoadInfoWindow
 from collision import GridCollisionSystem, QuadTreeCollisionSystem
 from latlon import LatLonConverter
 from openstreetmap import query_roads_by_lat_lon, save_raw_json_map_data
@@ -21,6 +21,8 @@ def main():
     secondary_window.addToParent()
     secondary_window.setBackground('white')
     secondary_window.clear()
+    road_info_window.setBackground('white')
+    road_info_window.clear()
 
     config_data = main_menu.config_data
     map_data = config_data["map_data"]
@@ -29,16 +31,10 @@ def main():
     W = map_data["coords_west"]
     N = map_data["coords_north"]
     E = map_data["coords_east"]
-    # S, W, N, E = "40.73489", "-73.99264", "40.74020", "-73.97923"  # NYC lower east side
-    # S, W, N, E = "40.9946", "-73.8817", "41.0174", "-73.8281"  # lower westchester
-    # overpass_query = query_roads_by_lat_lon(S, W, N, E)
-    # save_raw_json_map_data(overpass_query, "map_data.txt")
-
     llc = LatLonConverter(window, S, W, N, E)
 
     graph = Graph()
     graph.load_open_street_map_data(map_data["filename"], llc)
-    # graph.load_open_street_map_data("map_data2.txt", llc)
 
     road_map = RoadMap(graph, window)
     road_map.draw()
@@ -61,6 +57,8 @@ def main():
     info.set_selected_car(cars[0])
     info.initialize_table()
     car_shapes[info.selected_car.index].shape.setFill("yellow")
+
+    road_info = RoadInfoWindow(road_info_window)
 
     for car_shape in car_shapes:
         car_shape.draw()
@@ -85,6 +83,7 @@ def main():
         # process events
         window.update()
         secondary_window.update()
+        road_info_window.update()
         frame.update()
         last_pressed_key = window.checkKey() or secondary_window.checkKey()
         if last_pressed_key is not None:
@@ -107,10 +106,18 @@ def main():
                     car_shapes[info.selected_car.index].shape.setFill("yellow")
                     continue
 
+            intersection_clicked = False
             for intersection in road_map.intersections.values():
                 if intersection.clicked(last_clicked_pt):
-                    road_map.show_info(intersection)
+                    sx, sy = window.toScreen(intersection.x, intersection.y)
+                    road_info_window_options = {"place": {"x": sx, "y": sy}}
+                    road_info_window.addToParent(road_info_window_options)
+                    road_info.set_selected_item(intersection)
+                    intersection_clicked = True
                     continue
+
+            if not intersection_clicked:
+                road_info_window.forget()
 
         last_clicked_pt = secondary_window.checkMouse()
         if last_clicked_pt is not None:
@@ -136,9 +143,10 @@ def main():
         for car_shape in car_shapes:
             car_shape.render()
 
-        info.updateTable()
+        info.update_table()
         if info.follow_car:
             window.centerScreenOnPoint(info.selected_car.x, info.selected_car.y)
+        road_info.update_table()
 
         road_map.draw_route(info.selected_car, info.show_route)
 
@@ -146,6 +154,7 @@ def main():
 
     window.close()
     secondary_window.close()
+    road_info_window.close()
     frame.close()
 
 
@@ -158,6 +167,7 @@ def pause():
     while window.checkKey() != "space" and secondary_window.checkKey() != "space":
         window.update()
         secondary_window.update()
+        road_info_window.update()
     message.undraw()
 
 
@@ -165,6 +175,7 @@ def cleanup():
     """free resources and close window"""
     window.close()
     secondary_window.close()
+    road_info_window.close()
     frame.close()
     sys.exit()
 
@@ -181,7 +192,11 @@ if __name__ == '__main__':
         "Info Window", 300, 400, autoflush=False, scrollable=False,
         new_window=False, master=frame.master, master_options=secondary_window_options
     )
-    main_menu = MainMenu(window, main, secondary_window=secondary_window)
+    road_info_window = GraphWin(
+        "Road Info Window", 200, 200, autoflush=False, scrollable=False,
+        new_window=False, master=frame.master, master_options={}
+    )
+    main_menu = MainMenu(window, main, hidden_windows=[secondary_window, road_info_window])
     menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
     frame.addMenu(menu_options)
 
