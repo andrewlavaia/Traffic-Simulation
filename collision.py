@@ -32,7 +32,8 @@ class Grid:
         self.cell_height = (y_max - y_min) // num_rows
         self.cells = [Cell()] * num_rows * num_cols
 
-    def get_cell_contents(self, cell_num):
+    def get_cell_contents(self, x, y):
+        cell_num = self.get_cell_num(x, y)
         return self.cells[cell_num].contents
 
     def get_cell_num(self, x, y):
@@ -184,12 +185,15 @@ class QuadTree:
 
 class CollisionSystem(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def get_nearby_objects(self, car):
+    def get_nearby_objects_xy(self, x, y):
         pass
 
     @abc.abstractmethod
     def update_objects(self, cars):
         pass
+
+    def get_nearby_objects(self, car):
+        return car.cell.contents  # speedup/simplification to ignore cars in adjacent cells
 
     def process_collisions(self, cars):
         for car in cars:
@@ -228,10 +232,10 @@ class GridCollisionSystem(CollisionSystem):
             car.cell = self.grid.get_cell_num(car.x, car.y)
             self.grid.insert_into_cell(car.cell, car.index)
 
-    def getNearbyObjects(self, car):
-        return self.grid.get_cell_contents(car.cell)
+    def get_nearby_objects_xy(self, x, y):
+        return self.grid.get_cell_contents(x, y) or []
 
-    def updateObjects(self, cars):
+    def update_objects(self, cars):
         for car in cars:
             cell_num = self.grid.get_cell_num(car.x, car.y)
             if cell_num != car.cell:
@@ -256,8 +260,8 @@ class QuadTreeCollisionSystem(CollisionSystem):
             car.cell = tree.cell
             self.cell_to_tree_map[car.cell.id] = tree
 
-    def get_nearby_objects(self, car):
-        return car.cell.contents  # speedup/simplification to ignore cars in adjacent cells
+    def get_nearby_objects_xy(self, x, y):
+        return self.quad.get_cell_contents(x, y) or []
 
     def remove_trees(self):
         """Consolidates subtrees"""

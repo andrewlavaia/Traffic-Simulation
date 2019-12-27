@@ -383,6 +383,17 @@ class GraphWin(tk.Canvas):
         wy1 -= y_zoom_adj
         return wx0, wy0, wx1, wy1
 
+    def getRelativeScreenPos(self, x, y):
+        """Convert a point in world coordinates to relative screen position
+        (0.0, 0.0) = top left of sceen
+        (0.5, 0.5) = center of screen
+        (1.0, 1.0) = bottom right of screen
+        """
+        wx0, wy0, wx1, wy1 = self.getScreenPoints()
+        relx = (x - wx0) / (wx1 - wx0)
+        rely = (y - wy0) / (wy1 - wy0)
+        return relx, rely
+
     def getCenterScreenPoint(self):
         """Get the center point of the screen in world coordinates"""
         sx, sy = self.toScreen(self.width/2.0, self.height/2.0)

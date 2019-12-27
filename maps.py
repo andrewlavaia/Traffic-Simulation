@@ -1,3 +1,4 @@
+from collision import Grid
 import graphs
 from graphics import Circle, Line, Point, color_rgb, Text
 import math_utils
@@ -11,8 +12,19 @@ class RoadMap:
         self.roads = {}  # edge_id: Road
         self.route = {}  # vertex_id: Line (used for drawing route)
 
+        # store map objects in a container for quick lookups by location
+        num_rows = 128
+        num_cols = 128
+        x_min = -canvas.scrollregion_x / 2.0
+        x_max = canvas.scrollregion_x / 2.0
+        y_min = -canvas.scrollregion_y / 2.0
+        y_max = canvas.scrollregion_y / 2.0
+        self.container = Grid(num_rows, num_cols, x_min, x_max, y_min, y_max)
+
         for vertex in graph.vertices.values():
             self.intersections[vertex.id] = Intersection(vertex)
+            cell = self.container.get_cell_num(vertex.x, vertex.y)
+            self.container.insert_into_cell(cell, vertex.id)
             for edge in vertex.get_edges():
                 p0 = Point(graph.vertices[edge.source].x, graph.vertices[edge.source].y)
                 p1 = Point(graph.vertices[edge.dest].x, graph.vertices[edge.dest].y)

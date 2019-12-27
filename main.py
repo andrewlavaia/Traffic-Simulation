@@ -85,7 +85,11 @@ def main():
         secondary_window.update()
         road_info_window.update()
         frame.update()
-        last_pressed_key = window.checkKey() or secondary_window.checkKey()
+        last_pressed_key = (
+            window.checkKey() or
+            secondary_window.checkKey() or
+            road_info_window.checkKey()
+        )
         if last_pressed_key is not None:
             if last_pressed_key == "space":
                 pause()
@@ -95,7 +99,7 @@ def main():
             elif last_pressed_key == "o":
                 window.zoomOut()
             elif last_pressed_key == "d":
-                print(road_map.getRoadsWithinView())
+                print(road_map.get_roads_within_view())
 
         last_clicked_pt = window.checkMouse()
         if last_clicked_pt is not None:
@@ -107,10 +111,12 @@ def main():
                     continue
 
             intersection_clicked = False
-            for intersection in road_map.intersections.values():
+            contents = road_map.container.get_cell_contents(last_clicked_pt.x, last_clicked_pt.y)
+            for intersection_id in contents:
+                intersection = road_map.intersections[intersection_id]
                 if intersection.clicked(last_clicked_pt):
-                    sx, sy = window.toScreen(intersection.x, intersection.y)
-                    road_info_window_options = {"place": {"x": sx, "y": sy}}
+                    relx, rely = window.getRelativeScreenPos(last_clicked_pt.x, last_clicked_pt.y)
+                    road_info_window_options = {"place": {"relx": relx, "rely": rely}}
                     road_info_window.addToParent(road_info_window_options)
                     road_info.set_selected_item(intersection)
                     intersection_clicked = True
@@ -164,7 +170,11 @@ def pause():
     message = Text(Point(cx, cy), 'Paused')
     message.setSize(24)
     message.draw(window)
-    while window.checkKey() != "space" and secondary_window.checkKey() != "space":
+    while (
+        window.checkKey() != "space" and
+        secondary_window.checkKey() != "space" and
+        road_info_window.checkKey() != "space"
+    ):
         window.update()
         secondary_window.update()
         road_info_window.update()
