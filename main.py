@@ -110,19 +110,18 @@ def main():
                     car_shapes[info.selected_car.index].shape.setFill("yellow")
                     continue
 
-            intersection_clicked = False
-            contents = road_map.container.get_cell_contents(last_clicked_pt.x, last_clicked_pt.y)
-            for intersection_id in contents:
-                intersection = road_map.intersections[intersection_id]
-                if intersection.clicked(last_clicked_pt):
+            map_obj_clicked = False
+            nearby_object_ids = road_map.get_nearby_object_ids(last_clicked_pt.x, last_clicked_pt.y)
+            for map_obj_id in nearby_object_ids:
+                map_obj = road_map.get_obj_by_id(map_obj_id)
+                if map_obj.clicked(last_clicked_pt):
                     relx, rely = window.getRelativeScreenPos(last_clicked_pt.x, last_clicked_pt.y)
                     road_info_window_options = {"place": {"relx": relx, "rely": rely}}
                     road_info_window.addToParent(road_info_window_options)
-                    road_info.set_selected_item(intersection)
-                    intersection_clicked = True
+                    road_info.set_selected_item(map_obj)
+                    map_obj_clicked = True
                     continue
-
-            if not intersection_clicked:
+            if not map_obj_clicked:
                 road_info_window.forget()
 
         last_clicked_pt = secondary_window.checkMouse()
@@ -158,10 +157,7 @@ def main():
 
         _root.update_idletasks()
 
-    window.close()
-    secondary_window.close()
-    road_info_window.close()
-    frame.close()
+    cleanup()
 
 
 def pause():
@@ -206,7 +202,8 @@ if __name__ == '__main__':
         "Road Info Window", 200, 200, autoflush=False, scrollable=False,
         new_window=False, master=frame.master, master_options={}
     )
-    main_menu = MainMenu(window, main, hidden_windows=[secondary_window, road_info_window])
+    hidden_windows = [secondary_window, road_info_window]
+    main_menu = MainMenu(window, main, hidden_windows=hidden_windows)
     menu_options = {"Menu": main_menu.run, "Restart": main, "Exit": cleanup}
     frame.addMenu(menu_options)
 

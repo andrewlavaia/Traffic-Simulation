@@ -24,6 +24,12 @@ def degrees_clockwise(dx, dy):
     return degrees
 
 
+def distance(point1, point2):
+    dx = point2.x - point1.x
+    dy = point2.y - point1.y
+    return pythag(dx, dy)
+
+
 def rotate_point(point, angle, center_point=(0, 0)):
     """Rotates a point around center_point(origin by default)
     Angle is in degrees.

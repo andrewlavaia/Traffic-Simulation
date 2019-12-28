@@ -33,6 +33,20 @@ class RoadMap:
                     self.roads[edge.id] = Road(edge.id, p0, p1, edge.name, edge.lanes)
                 else:
                     self.roads[edge.id] = Road2W(edge.id, p0, p1, edge.name, edge.lanes)
+                cells = self.container.get_cells_between_two_points(p0, p1)
+                for cell in cells:
+                    self.container.insert_into_cell(cell, edge.id)
+
+    def get_nearby_object_ids(self, x, y):
+        # TODO give precedence to intersections (sort or draw on top or check clicks)
+        return self.container.get_cell_contents(x, y)
+
+    def get_obj_by_id(self, obj_id):
+        # TODO handle collisions if id in both dicts
+        if obj_id in self.intersections:
+            return self.intersections[obj_id]
+        else:
+            return self.roads[obj_id]
 
     def get_roads_within_view(self):
         x0, y0, x1, y1 = self.canvas.getScreenPoints()
@@ -108,6 +122,7 @@ class Road:
         self.p1 = p1
         self.name = name
         self.lanes = lanes
+        self.distance = math_utils.distance(p0, p1)
 
         self.dx = self.p1.x - self.p0.x
         self.dy = self.p1.y - self.p0.y
@@ -119,6 +134,7 @@ class Road:
         self.width = 2
         self.way_gap = 0  # size of gap between each road direction
         self.lane_gap = 4  # size of gap between lines
+        self.click_threshold = self.width * self.lanes
 
         for i in range(lanes):
             u0 = self.get_lane_adjusted_point(self.p0.x, self.p0.y, i)
@@ -178,6 +194,22 @@ class Road:
             )
         return new_point
 
+    def clicked(self, p):
+        clicked_p0_dist = math_utils.distance(p, self.p0)
+        clicked_p1_dist = math_utils.distance(p, self.p1)
+        if clicked_p0_dist + clicked_p1_dist <= self.distance + self.click_threshold:
+            return True
+        return False
+
+    def get_info(self):
+        info = {
+            "type": "Road",
+            "id": self.id,
+            "name": self.name,
+            "lanes": self.lanes,
+        }
+        return info
+
 
 class Road2W(Road):
     """graphical representation of two opposite edges - two way road"""
@@ -195,17 +227,6 @@ class Road2W(Road):
             w1 = self.get_lane_adjusted_point(p1.x, p1.y, i, reverse=True)
             self.lines.append(self.create_line(u0, u1, self.width))
             self.lines.append(self.create_line(w1, w0, self.width))
-
-    def __eq__(self, other):
-        # This is only used for quickly creating a set of roads by name
-        return self.name == other.name
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def draw(self, canvas):
-        for line in self.lines:
-            line.draw(canvas)
 
 
 class Intersection:

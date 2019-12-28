@@ -44,6 +44,33 @@ class Grid:
             return -1
         return int(cell_num)
 
+    def get_cells_between_two_points(self, p0, p1):
+        cells = set()
+        x0 = p0.x
+        y0 = p0.y
+        x1 = p1.x
+        y1 = p1.y
+
+        cell0 = self.get_cell_num(x0, y0)
+        if cell0 != -1:
+            cells.add(cell0)
+        cell1 = self.get_cell_num(x1, y1)
+        if cell1 != -1:
+            cells.add(cell1)
+        if cell0 == cell1:
+            return cells
+
+        step = 10
+        x = x0
+        y = y0
+        while x <= x1:
+            x += step
+            y = y0 + ((x - x0) * (y1 - y0) / (x1 - x0))
+            cell_num = self.get_cell_num(x, y)
+            if cell_num != -1:
+                cells.add(cell_num)
+        return cells
+
     def insert_into_cell(self, cell_num, obj_id):
         if cell_num == -1:
             return
