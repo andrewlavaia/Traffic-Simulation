@@ -1,6 +1,6 @@
 import re
 from abc import ABCMeta, abstractmethod
-from graphics import *
+from graphics import Entry, Point, Rectangle, Text
 
 
 class UIBase(metaclass=ABCMeta):
@@ -76,7 +76,7 @@ class InputBox(UIBase):
         self.point = point
         self.type = input_type
         self.label = Text(point, label_text)
-        x_offset = 100 + ((char_max - 10)/2.0 * 9)  # diff b/t default char_max and font_size / 2
+        x_offset = 120 + ((char_max - 10)/2.0 * 9)  # diff b/t default char_max and font_size / 2
         self.entry = Entry(Point(point.x + x_offset, point.y), char_max)
         if default_val is not None:
             self.set_input(default_val)
@@ -180,7 +180,6 @@ class TableRow(UIBase):
         return str(self.values)
 
     def create_labels(self, x, y, col_width, alignment="right", font_size=10):
-        labels = []
         for i, value in enumerate(self.values):
             x += i * col_width
             label = Text(Point(x, y), value)
@@ -203,12 +202,12 @@ class TableRow(UIBase):
 
 
 class HeaderText(UIBase):
-    def __init__(self, canvas, point, text, font_size=24, style="normal"):
+    def __init__(self, canvas, point, text, font_size=24, style="normal", align="left"):
         self.canvas = canvas
         self.text = Text(point, text)
         self.text.setSize(font_size)
         self.text.setStyle(style)
-        self.text.setAlignment('left')
+        self.text.setAlignment(align)
         self.draw()
 
     def draw(self):

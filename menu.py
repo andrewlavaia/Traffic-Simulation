@@ -22,21 +22,22 @@ class MainMenu:
         self.labels = []
 
         self.simulation_btn = Button(
-            self.simulation_btn_click, self.window, Point(700, 300), 200, 100, 'Run Simulation'
+            self.simulation_btn_click, self.window, Point(640, 650), 600, 150, 'Run Simulation'
         )
         self.buttons.append(self.simulation_btn)
 
-        margin_top = 50
+        font_size = 12
         length = 10
+        margin_top = 50
+
+        # Map Coordinates Section
         x = 250
         y = 100
-        font_size = 12
-
-        map_coords_header = HeaderText(self.window, Point(x, y), 'Map Coordinates')
+        map_coords_header = HeaderText(self.window, Point(x, y), 'Map Coordinates', align="center")
         self.labels.append(map_coords_header)
 
         north = self.config_data["map_data"]["coords_north"]
-        y += margin_top
+        y += margin_top + 10
         self.input_n = InputBox(
             self.window, Point(x, y), 'float', 'Latitude North: ', length, default_val=north
         )
@@ -61,8 +62,8 @@ class MainMenu:
         self.inputs.append(self.input_e)
 
         y += margin_top
-        divider_text = "-" * 30
-        divider = HeaderText(self.window, Point(x, y), divider_text, font_size=font_size)
+        divider_text = "-" * 60
+        divider = HeaderText(self.window, Point(x, y), divider_text, font_size=font_size, align="center")
         self.labels.append(divider)
 
         y += margin_top
@@ -82,10 +83,24 @@ class MainMenu:
         divider_text = "-" * 100
         divider = HeaderText(self.window, Point(x, y), divider_text, font_size=font_size)
 
+        # Simulation Parameters Section
+        x = 800
+        y = 100
+        sim_param_header = HeaderText(self.window, Point(x, y), 'Simulation Parameters', align="center")
+        self.labels.append(sim_param_header)
+
+        num_cars = self.config_data["num_cars"]
+        y += margin_top + 10
+        self.input_num_cars = InputBox(
+            self.window, Point(x, y), 'unsigned_int', 'Number of Cars', length, default_val=num_cars
+        )
+        self.inputs.append(self.input_num_cars)
+
     def draw_menu(self):
         self.window.clear()
         self.window.setBackground('white')
         self.window.resetView()
+        self.load_config_data()
 
         for hidden_window in self.hidden_windows:
             hidden_window.forget()
@@ -154,10 +169,17 @@ class MainMenu:
                 for button in self.buttons:
                     button.clicked(last_clicked_pt)
 
+    def load_config_data(self):
+        self.input_num_cars.set_input(self.config_data["num_cars"])
+        self.input_s.set_input(self.config_data["map_data"]["coords_south"])
+        self.input_w.set_input(self.config_data["map_data"]["coords_west"])
+        self.input_n.set_input(self.config_data["map_data"]["coords_north"])
+        self.input_e.set_input(self.config_data["map_data"]["coords_east"])
+
     def set_config_data(self):
         filename = "config.yml"
         self.config_data = {
-            "num_cars": 100,
+            "num_cars": int(self.input_num_cars.input_text),
             "map_data": {
                 "filename": self.map_filename,
                 "coords_south": self.input_s.input_text,

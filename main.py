@@ -47,7 +47,7 @@ def main():
     car_factory = CarFactory(window, gps, cars, car_shapes)
 
     num_cars = config_data["num_cars"]
-    for i in range(num_cars):
+    for _ in range(num_cars):
         car_factory.create()
 
     # collision_system = GridCollisionSystem(window, cars)
@@ -103,24 +103,29 @@ def main():
 
         last_clicked_pt = window.checkMouse()
         if last_clicked_pt is not None:
+            car_clicked = False
+            map_obj_clicked = False
+
             for car_shape in car_shapes:
                 if car_shape.clicked(last_clicked_pt):
                     car_shapes[info.selected_car.index].shape.setFill("white")
                     info.set_selected_car(cars[car_shape.index])
                     car_shapes[info.selected_car.index].shape.setFill("yellow")
-                    continue
+                    car_clicked = True
+                    break
+ 
+            if not car_clicked:
+                nearby_object_ids = road_map.get_nearby_object_ids(last_clicked_pt.x, last_clicked_pt.y)
+                for map_obj_id in nearby_object_ids:
+                    map_obj = road_map.get_obj_by_id(map_obj_id)
+                    if map_obj.clicked(last_clicked_pt):
+                        relx, rely = window.getRelativeScreenPos(last_clicked_pt.x, last_clicked_pt.y)
+                        road_info_window_options = {"place": {"relx": relx, "rely": rely}}
+                        road_info_window.addToParent(road_info_window_options)
+                        road_info.set_selected_item(map_obj)
+                        map_obj_clicked = True
+                        break
 
-            map_obj_clicked = False
-            nearby_object_ids = road_map.get_nearby_object_ids(last_clicked_pt.x, last_clicked_pt.y)
-            for map_obj_id in nearby_object_ids:
-                map_obj = road_map.get_obj_by_id(map_obj_id)
-                if map_obj.clicked(last_clicked_pt):
-                    relx, rely = window.getRelativeScreenPos(last_clicked_pt.x, last_clicked_pt.y)
-                    road_info_window_options = {"place": {"relx": relx, "rely": rely}}
-                    road_info_window.addToParent(road_info_window_options)
-                    road_info.set_selected_item(map_obj)
-                    map_obj_clicked = True
-                    continue
             if not map_obj_clicked:
                 road_info_window.forget()
 
@@ -199,7 +204,7 @@ if __name__ == '__main__':
         new_window=False, master=frame.master, master_options=secondary_window_options
     )
     road_info_window = GraphWin(
-        "Road Info Window", 200, 200, autoflush=False, scrollable=False,
+        "Road Info Window", 300, 130, autoflush=False, scrollable=False,
         new_window=False, master=frame.master, master_options={}
     )
     hidden_windows = [secondary_window, road_info_window]

@@ -38,8 +38,7 @@ class RoadMap:
                     self.container.insert_into_cell(cell, edge.id)
 
     def get_nearby_object_ids(self, x, y):
-        # TODO give precedence to intersections (sort or draw on top or check clicks)
-        return self.container.get_cell_contents(x, y)
+        return sorted(self.container.get_cell_contents(x, y), key=lambda x: x in self.roads)
 
     def get_obj_by_id(self, obj_id):
         # TODO handle collisions if id in both dicts

@@ -53,7 +53,7 @@ class InfoWindow:
 class RoadInfoWindow:
     def __init__(self, canvas):
         self.canvas = canvas
-        self.table = Table(self.canvas, Point(30, 10), col_width=100, font_size=10)
+        self.table = Table(self.canvas, Point(50, 10), col_width=150, font_size=10)
         self.selected_item = None
 
     def set_selected_item(self, map_object):
