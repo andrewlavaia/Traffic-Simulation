@@ -30,12 +30,11 @@ class Graph:
 
         for connection in data["connections"]:
             edge = Edge(connection[0], connection[1], 1, None)
-            self.addEdge(edge)
+            self.add_edge(edge)
 
     def load_open_street_map_data(self, filename, lat_lon_converter):
         api = overpy.Overpass()
         result = api.parse_json(file_utils.load_bytes(filename))
-        nodes = {}
 
         for node in result.nodes:
             if self.vertices.get(node.id) is None:
